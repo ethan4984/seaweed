@@ -230,13 +230,15 @@ longModeCode:
 
     call findRSDP
 
-    mov rdi, 0x100000
+    mov rdi, 0xffffffff80100000
     mov rsi, 0xfc00
-    mov rcx, 64000
+    mov rcx, 0x10000 ; 64k
     rep movsb
 
-    mov rdi, bootheader
-    jmp 0x100000
+    mov rdi, bootheader + 0xffff800000000000
+    mov rsp, 0xffffffff80007c00
+    mov rbp, 0xffffffff80007c00
+    jmp 0xffffffff80100000
 
 findRSDP:
     mov eax, 0x80000

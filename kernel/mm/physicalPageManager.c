@@ -11,7 +11,7 @@ uint8_t *bitmap;
 uint64_t totalDetectedMemory = 0;
 
 void initPMM(bproto_t *bproto) {
-    bitmap = (uint8_t*)0xF900 + 64000;
+    bitmap = (uint8_t*)(0xF900 + 64000 + HIGH_VMA);
     memset(bitmap, 0, 0x20000);
 
     mmapEntry_t *mmapEntries = (mmapEntry_t*)bproto->mmapAddress;

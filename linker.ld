@@ -3,7 +3,7 @@ ENTRY(bootMain)
 
 SECTIONS
 {
-    . = 0xfc00;
+    . = 0xffffffff80100000;
 
     .init : {
         *(.init)

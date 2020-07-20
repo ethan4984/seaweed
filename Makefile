@@ -1,17 +1,17 @@
 CC = ~/opt/cross/bin/x86_64-elf-gcc
-CFLAGS = -Wall -Wextra -ffreestanding -fno-pic -mno-sse -mno-sse2 -mno-mmx -mno-80387 -fno-stack-protector -I.
+CFLAGS = -Wall -Wextra -ffreestanding -fno-pic -mno-sse -mno-sse2 -mno-mmx -mno-80387 -fno-stack-protector -I. -mno-red-zone -gdwarf -mcmodel=kernel
 QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk
 
 LDFLAGS = -O2 -nostdlib -no-pie -lgcc -static-libgcc
 CSOURCE = $(shell find ./ -type f -name '*.c' | sort)
-OBJSOURCE =  $(shell find ./ -type f -name '*.o' | sort)
 
 build:
+	rm -f seaweed
 	mkdir -p Bin
 	$(CC) $(CFLAGS) -c $(CSOURCE)
-	$(CC) $(LDFLAGS) -T linker.ld $(OBJSOURCE) -o Bin/kernel.bin
+	$(CC) $(LDFLAGS) -T linker.ld *.o -o Bin/kernel.bin
 	nasm -fbin kernel/boot.asm -o seaweed
-	mv -f $(OBJSOURCE) Bin
+	rm -f *.o Bin/kernel.bin 
 clean:
 	rm -f $(OBJSOURCE) kernel.bin seaweed serial.log qemu.log
 
