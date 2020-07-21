@@ -4,13 +4,47 @@
 
 #include <stdarg.h>
 
-void kprintDS(const char *str, ...) { // debug serial
+typedef struct {
+    const char *prefix;
+    uint8_t prefixColour;
+    uint8_t textColour;
+} prefixList_t;
+
+prefixList_t prefixList[] = {   { "[KDEBUG]", GREEN, YELLOW },
+                                { "[KMM]", GREEN, LIGHTRED }
+                            };
+                            
+const char *bashColours[] = {   "\e[39m", "\e[30m", "\e[31m", "\e[32m",
+                                "\e[33m", "\e[34m", "\e[35m", "\e[36m",
+                                "\e[37m", "\e[90m", "\e[91m", "\e[92m",
+                                "\e[93m", "\e[94m", "\e[95m", "\e[96m",
+                                "\e[97m"
+                            };
+
+static void serialWriteString(const char *str);
+
+void kprintDS(const char *prefix, const char *str, ...) { // debug serial
     uint64_t hold = 0;
     char *string;
     char character;
 
     va_list arg;
     va_start(arg, str);
+
+    for(uint64_t i = 0; i < sizeof(prefixList) / sizeof(prefixList_t); i++) {
+        if(strcmp(prefixList[i].prefix, prefix) == 0) {
+            serialWriteString(bashColours[prefixList[i].prefixColour]);
+            serialWriteString(prefix);
+            serialWriteString(bashColours[prefixList[i].textColour]);
+            serialWrite(' ');
+            break;
+        }
+
+        if(i == sizeof(prefixList) / sizeof(prefixList_t) - 1) {
+            serialWriteString(bashColours[DEFAULT]);
+        }
+    }
+
 
     for(uint64_t i = 0; i < strlen(str); i++) {
         if(str[i] != '%')
@@ -46,4 +80,8 @@ void kprintDS(const char *str, ...) { // debug serial
     serialWrite('\n'); 
 }
 
-
+static void serialWriteString(const char *str) {
+    for(uint64_t i = 0; i < strlen(str); i++) {
+        serialWrite(str[i]);
+    }
+}

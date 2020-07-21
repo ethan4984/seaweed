@@ -5,7 +5,7 @@
 
 void initPMM();
 
-void *physicalPageAlloc(uint64_t count);
+uint64_t physicalPageAlloc(uint64_t count);
 
 void physicalPageFree(void *base, uint64_t count);
 

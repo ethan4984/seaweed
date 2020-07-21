@@ -3,6 +3,8 @@
 #include <lib/memUtils.h>
 #include <lib/output.h>
 
+#include <stddef.h>
+
 uint64_t *pml4 = (uint64_t*)pml4Addr; 
 uint64_t *pml3 = (uint64_t*)pml3Addr; 
 uint64_t *pml2 = (uint64_t*)pml2Addr; 
@@ -10,12 +12,19 @@ uint64_t *pml2 = (uint64_t*)pml2Addr;
 uint64_t *pml3HH = (uint64_t*)pml3AddrHH;
 uint64_t *pml2HH = (uint64_t*)pml2AddrHH;
 
-typedef struct {
-    
-} pageDirectoryEntry_t;
+ struct {
+    uint64_t *pml4;
+    uint64_t *pml3;
+    uint64_t *pml2;
+    uint64_t *pml1;
+} pageDirectoryEntry_t = { NULL, NULL, NULL, NULL };
+
+typedef struct pageDirectoryEntry_t bruh;
+
+uint64_t *hashMap;
 
 uint64_t createNewAddressSpace(uint64_t size) {
-        
+ 
 }
 
 void initVMM() {
