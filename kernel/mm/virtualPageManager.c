@@ -33,6 +33,9 @@ uint64_t createNewAddressSpace(uint64_t size, uint64_t flags) {
     uint64_t *pml3Virtual = (uint64_t*)(pageDirectoryTables[hB].pml3 + HIGH_VMA);
     uint64_t *pml2Virtual = (uint64_t*)(pageDirectoryTables[hB].pml2 + HIGH_VMA);
 
+    pml4Virtual[256] = ((uint64_t)pml3) | (1 << 8) | 0x3; // set as global and present and r/w
+    pml4Virtual[511] = ((uint64_t)pml3HH) | (1 << 8) | 0x3;
+    
     pml4Virtual[0] = ((uint64_t)&pml3Virtual[0] - HIGH_VMA) | 0x3;
     pml3Virtual[0] = ((uint64_t)&pml2Virtual[0] - HIGH_VMA) | 0x3;
 

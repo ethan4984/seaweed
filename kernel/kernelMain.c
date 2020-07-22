@@ -38,5 +38,8 @@ void bootMain(bproto_t *bproto) {
     uint64_t bruh = createNewAddressSpace(2, 0x3);
     initAddressSpace(bruh);
 
+    uint64_t bruh1 = createNewAddressSpace(69, 0x3);
+    initAddressSpace(bruh1);
+
     for(;;);
 }
