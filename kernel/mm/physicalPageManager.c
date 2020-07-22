@@ -24,8 +24,6 @@ void initPMM(bproto_t *bproto) {
         }
     }
     
-    kprintDS("[KMM]", "Bitmap located at %x", bitmap);
-   
     allocateRegion(0, 0x100000 + 0x20000); // mark the first one mb as allocated cuz i cant be bothered
 
     kprintDS("[KMM]", "Physical Memory Manager initalized");

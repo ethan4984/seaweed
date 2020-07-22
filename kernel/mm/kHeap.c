@@ -62,8 +62,8 @@ void *kmalloc(uint64_t size) {
 }
 
 void kfree(void *addr) {
-    uint64_t bitmapBase = ((uint64_t)addr - kHeapBegin) / 0x1000;
-
+    uint64_t bitmapBase = ((uint64_t)addr - HIGH_VMA - kHeapBegin) / 32; 
+    
     uint64_t i;
     for(i = 0; i < allocationBitmapSize; i++) {
         if(allocationBitmap[i].block == bitmapBase)

@@ -31,19 +31,11 @@ void bootMain(bproto_t *bproto) {
 
     initPMM(bproto);
 
-    register uint64_t rsp asm ("rsp") = physicalPageAlloc(4) + 0x4000 + KERNEL_HIGH_VMA;
+    register uint64_t rsp asm ("rsp") = physicalPageAlloc(4) + 0x4000 + KERNEL_HIGH_VMA; //
 
     kHeapInit();
 
-    uint64_t *bruh1 = kmalloc(33);
-    kfree(bruh1);
-    uint64_t *bruh2 = kmalloc(1);
-    uint64_t *bruh3 = kmalloc(4);
-
-    kprintDS(NULL, "bruh1 : %x", bruh1); 
-    kprintDS(NULL, "bruh2 : %x", bruh2); 
-    kprintDS(NULL, "bruh3 : %x", bruh3); 
-    //    initVMM();
+    initVMM();
 
     for(;;);
 }
