@@ -17,9 +17,19 @@
 
 #include <stdint.h>
 
+typedef struct {
+    uint64_t pml4;
+    uint64_t pml3;
+    uint64_t pml2;
+    uint64_t pml1;
+    uint64_t flags;
+} pageDirectoryEntry_t;
+
+typedef struct pageDirectoryEntry pageDirectoryTableEntry_t;
+
 typedef void *symbol[];
 
-uint64_t createNewAddressSpace(uint64_t size);
+uint64_t createNewAddressSpace(uint64_t size, uint64_t flags);
 
 void initAddressSpace(uint64_t index);
 

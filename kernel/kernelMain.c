@@ -29,13 +29,14 @@ void bootMain(bproto_t *bproto) {
         kprintDS("[KDEBUG]", "[%x -> %x] : length %x type %x", mmapEntries[i].base, mmapEntries[i].base + mmapEntries[i].length, mmapEntries[i].length, mmapEntries[i].type);
     }
 
-    initPMM(bproto);
-
     register uint64_t rsp asm ("rsp") = physicalPageAlloc(4) + 0x4000 + KERNEL_HIGH_VMA; //
 
+    initPMM(bproto);
     kHeapInit();
-
     initVMM();
+
+    uint64_t bruh = createNewAddressSpace(2, 0x3);
+    initAddressSpace(bruh);
 
     for(;;);
 }
