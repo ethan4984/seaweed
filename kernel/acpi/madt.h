@@ -59,6 +59,6 @@ typedef struct {
 
 void madtInit();
 
-madtInfo_t *grabMadt();
+madtInfo_t grabMadt();
 
 #endif

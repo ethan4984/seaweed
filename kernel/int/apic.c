@@ -5,14 +5,14 @@
 #include <lib/asmUtils.h>
 #include <lib/output.h>
 
-madtInfo_t *madtInfo;
+madtInfo_t madtInfo;
 
 uint32_t lapicRead(uint16_t offset) {
-    return *(volatile uint32_t*)(madtInfo->lapicAddr + HIGH_VMA + offset);
+    return *(volatile uint32_t*)(madtInfo.lapicAddr + HIGH_VMA + offset);
 }
 
 void lapicWrite(uint16_t offset, uint32_t data) {
-    *(volatile uint32_t*)(madtInfo->lapicAddr + HIGH_VMA + offset) = data;
+    *(volatile uint32_t*)(madtInfo.lapicAddr + HIGH_VMA + offset) = data;
 }
 
 uint32_t ioapicRead(uint64_t ioapicBase, uint32_t reg) {
@@ -24,6 +24,12 @@ void ioapicWrite(uint64_t ioapicBase, uint32_t reg, uint32_t data) {
     *(volatile uint32_t*)((uint64_t)ioapicBase + HIGH_VMA) = reg;
     *(volatile uint32_t*)((uint64_t)ioapicBase + 16 + HIGH_VMA) = data;
 }
+
+void sendIPI(uint8_t ap, uint32_t ipi) {
+    lapicWrite(LAPIC_REG_ICR1, (ap << 24));
+    lapicWrite(LAPIC_REG_ICR0, ipi);
+}
+
 
 void initAPIC() {
     /* remap pic */
@@ -50,5 +56,10 @@ void initAPIC() {
         kprintDS("[APIC]", "lapic enabled"); 
     } else {
         kprintDS("[APIC]", "A full bruh momento just occoured, we would not your lapic to work :("); 
+    }
+
+    for(int i = 1; i < madtInfo.madtEntry0Count; i++) {
+        kprintDS("[APIC]", "Startup IPI send to core %d", i);
+        sendIPI(i, 0x500);
     }
 }

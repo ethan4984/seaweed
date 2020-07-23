@@ -45,7 +45,5 @@ void bootMain(bproto_t *bproto) {
     initAPIC();
     idtInit();
 
-
-
     for(;;);
 }
