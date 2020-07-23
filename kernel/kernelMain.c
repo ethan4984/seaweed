@@ -4,6 +4,7 @@
 #include <kernel/acpi/madt.h>
 #include <kernel/int/apic.h>
 #include <kernel/mm/kHeap.h>
+#include <kernel/int/idt.h>
 #include <kernel/bproto.h>
 #include <lib/memUtils.h>
 #include <lib/output.h>
@@ -42,6 +43,9 @@ void bootMain(bproto_t *bproto) {
 
     madtInit();
     initAPIC();
+    idtInit();
+
+
 
     for(;;);
 }

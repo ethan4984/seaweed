@@ -1,5 +1,6 @@
 #include <kernel/int/idt.h>
 #include <lib/asmUtils.h>
+#include <lib/output.h>
 
 idtEntry_t idt[256];
 idtr_t idtr;
@@ -15,7 +16,9 @@ void setIDTentry(uint8_t codeSelector, uint8_t index, uint8_t typesAndAttributes
 }
 
 extern void isrHandlerMain(regs_t *stack) {
-    
+    if(stack->isrNumber >= 32) {
+        kprintDS("[KDEBUG]", "bruh we fucked up");
+    }
 }
 
 void idtInit() {
@@ -112,7 +115,7 @@ void idtInit() {
     setIDTentry(40, 90, 0x8f, (uint64_t)isr90);
     setIDTentry(40, 91, 0x8f, (uint64_t)isr91);
     setIDTentry(40, 92, 0x8f, (uint64_t)isr92);
-    setIDTentry(40, 3, 0x8f, (uint64_t)isr93);
+    setIDTentry(40, 93, 0x8f, (uint64_t)isr93);
     setIDTentry(40, 94, 0x8f, (uint64_t)isr94);
     setIDTentry(40, 95, 0x8f, (uint64_t)isr95);
     setIDTentry(40, 96, 0x8f, (uint64_t)isr96);
@@ -275,8 +278,8 @@ void idtInit() {
     setIDTentry(40, 253, 0x8f, (uint64_t)isr253);
     setIDTentry(40, 254, 0x8f, (uint64_t)isr254);
 
-    idtr.limit = 255 * sizeof(idtEntry_t) - 1;
+    idtr.limit = 256 * sizeof(idtEntry_t) - 1;
     idtr.offset = (uint64_t)&idt;
 
-    asm volatile ("lidtq %0" :: "m"(idtr));
+    asm volatile ("lidtq %0" : "=m"(idtr));
 }

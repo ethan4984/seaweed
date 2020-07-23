@@ -48,4 +48,8 @@ uint16_t inw(uint16_t port);
 
 uint32_t ind(uint16_t port);
 
+uint64_t rdmsr(uint64_t msr); 
+
+void wrmsr(uint64_t msr, uint64_t data);
+
 #endif

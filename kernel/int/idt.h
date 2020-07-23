@@ -11,12 +11,14 @@ typedef struct {
     uint16_t offsetMid;
     uint32_t offsetHigh;
     uint32_t zero32;
-} idtEntry_t;
+} __attribute__((packed)) idtEntry_t;
 
 typedef struct {
     uint16_t limit;
     uint64_t offset;
-} idtr_t;
+} __attribute__((packed)) idtr_t;
+
+void idtInit();
 
 extern void isr0();
 extern void isr1();

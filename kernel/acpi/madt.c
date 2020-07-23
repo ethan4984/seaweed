@@ -10,7 +10,6 @@ void madtInit() {
     madt_t *madt = (madt_t*)findSDT("APIC");
 
     madtInfo.lapicAddr = madt->lapicAddr;
-    serialWrite('\n');
     kprintDS("[APIC]", "lapic address %x", madtInfo.lapicAddr);
 
     madtInfo.madtEntry0 = kmalloc(sizeof(madtEntry0_t) * 50);
@@ -42,43 +41,39 @@ void madtInit() {
         i += entrySize - 3;
     }
 
-    kprintDS("[APIC]", "Parsing madt entries 0\n");
     for(uint64_t i = 0; i < madtInfo.madtEntry0Count; i++) {
+        kprintDS("[APIC]", "Parsing madt0 entry %d", i);
         kprintDS("[APIC]", "Processor %ds lapic", i);
         kprintDS("[APIC]", "ACPI processor ID: %x", madtInfo.madtEntry0[i].acpiProcessorID);
         kprintDS("[APIC]", "APIC ID: %x", madtInfo.madtEntry0[i].apicID);
-        kprintDS("[APIC]", "Flags: %x\n", madtInfo.madtEntry0[i].flags);
+        kprintDS("[APIC]", "Flags: %x", madtInfo.madtEntry0[i].flags);
     }
-
-    kprintDS("[APIC]", "Parsing madt entries 1\n");
 
     for(uint64_t i = 0; i < madtInfo.madtEntry1Count; i++) {
+        kprintDS("[APIC]", "Parsing madt1 entry %d", i);
         kprintDS("[APIC]", "I/O APIC ID: %x", madtInfo.madtEntry1[i].ioapicID);
         kprintDS("[APIC]", "I/O APIC address: %x", madtInfo.madtEntry1[i].ioapicAddr);
-        kprintDS("[APIC]", "GSI base %x\n", madtInfo.madtEntry1[i].gsiBase);
+        kprintDS("[APIC]", "GSI base %x", madtInfo.madtEntry1[i].gsiBase);
     }
 
-    kprintDS("[APIC]", "Parsing madt entries 2\n");
-
     for(uint64_t i = 0; i < madtInfo.madtEntry2Count; i++) {
+        kprintDS("[APIC]", "Parsing madt2 entry %d", i);
         kprintDS("[APIC]", "bus source: %x", madtInfo.madtEntry2[i].busSrc);
         kprintDS("[APIC]", "irq source: %x", madtInfo.madtEntry2[i].irqSrc);
         kprintDS("[APIC]", "gsi %x", madtInfo.madtEntry2[i].gsi);
-        kprintDS("[APIC]", "flags %x\n", madtInfo.madtEntry2[i].flags);
+        kprintDS("[APIC]", "flags %x", madtInfo.madtEntry2[i].flags);
     }
-
-    kprintDS("[APIC]", "Parsing madt entries 4\n");
 
     for(uint64_t i = 0; i < madtInfo.madtEntry4Count; i++) {
+        kprintDS("[APIC]", "Parsing madt4 entry %d", i);
         kprintDS("[APIC]", "ACPI processor ID %x", madtInfo.madtEntry4[i].acpiProcessorID);
         kprintDS("[APIC]", "flags %x", madtInfo.madtEntry4[i].flags);
-        kprintDS("[APIC]", "lint %x\n", madtInfo.madtEntry4[i].lint);
+        kprintDS("[APIC]", "lint %x", madtInfo.madtEntry4[i].lint);
     }
 
-    kprintDS("[APIC]", "Parsing madt entries 5\n");
-
     for(uint64_t i = 0; i < madtInfo.madtEntry5Count; i++) {
-        kprintDS("[APIC]", "lapic override %x\n", madtInfo.madtEntry5[i].lapicOverride);
+        kprintDS("[APIC]", "Parsing madt5 entry %d", i);
+        kprintDS("[APIC]", "lapic override %x", madtInfo.madtEntry5[i].lapicOverride);
     }
 
     kprintDS("[APIC]", "System core count: %d", madtInfo.madtEntry0Count);

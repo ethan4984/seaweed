@@ -1,7 +1,9 @@
 #include <kernel/mm/virtualPageManager.h>
+#include <kernel/mm/kHeap.h>
 #include <kernel/acpi/madt.h>
 #include <kernel/int/apic.h> 
 #include <lib/asmUtils.h>
+#include <lib/output.h>
 
 madtInfo_t *madtInfo;
 
@@ -36,10 +38,17 @@ void initAPIC() {
     outb(0x21, 0x0);
     outb(0xa1, 0x0);
     /* disable the pic */
-    outb(0xa1, 0xFF);
-    outb(0x21, 0xFF);
+    outb(0xa1, 0xff);
+    outb(0x21, 0xff);
 
     madtInfo = grabMadt();
 
-    lapicWrite(0xf0, lapicRead(0xf0) | 0x1ff);
+    wrmsr(IA32_APIC_BASE, (1 << 11)); // lapic enable
+    lapicWrite(0xf0, lapicRead(0xf0) | 0x1ff); // enavle spurious interrupts
+
+    if(rdmsr(IA32_APIC_BASE) & (1 << 11)) {
+        kprintDS("[APIC]", "lapic enabled"); 
+    } else {
+        kprintDS("[APIC]", "A full bruh momento just occoured, we would not your lapic to work :("); 
+    }
 }
