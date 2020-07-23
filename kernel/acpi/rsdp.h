@@ -25,7 +25,7 @@ typedef struct {
     uint64_t xsdtAddr;
     uint8_t extChecksum;
     uint8_t reserved[3];
-} rsdp_t;
+} __attribute__((packed)) rsdp_t;
 
 typedef struct {
     acpihdr_t acpihdr;

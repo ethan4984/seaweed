@@ -2,6 +2,7 @@
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/kHeap.h>
 #include <kernel/acpi/rsdp.h>
+#include <kernel/acpi/madt.h>
 #include <kernel/bproto.h>
 #include <lib/output.h>
 #include <lib/memUtils.h>
@@ -37,6 +38,8 @@ void bootMain(bproto_t *bproto) {
     initVMM();
 
     rsdpInit((uint64_t*)(bproto->rsdp + HIGH_VMA));
+
+    madtInit();
 
     for(;;);
 }
