@@ -15,9 +15,54 @@ void setIDTentry(uint8_t codeSelector, uint8_t index, uint8_t typesAndAttributes
     idt[index].zero32 = 0;
 }
 
+const char *exceptionMessages[] = { "Divide by zero",
+                                    "Debug",
+                                    "NMI",
+                                    "Breakpoint",
+                                    "Overflow",
+                                    "Bound Range Exceeded",
+                                    "Invaild Opcode",
+                                    "Device Not Available", 
+                                    "Double fault", 
+                                    "Co-processor Segment Overrun",
+                                    "Invaild TSS",
+                                    "Segment not present",
+                                    "Stack-Segment Fault",
+                                    "GPR",
+                                    "Page Fault",
+                                    "Reserved",
+                                    "x87 Floating Point Exception",
+                                    "allignement check",
+                                    "Machine check",
+                                    "SIMD floating-point exception",
+                                    "Virtualization Excpetion",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Security Exception",
+                                    "Reserved",
+                                    "Triple Fault", 
+                                    "FPU error"
+                                  };
+
 extern void isrHandlerMain(regs_t *stack) {
-    if(stack->isrNumber >= 32) {
-        kprintDS("[KDEBUG]", "bruh we fucked up");
+    if(stack->isrNumber <= 32) {
+        uint64_t cr2;
+        asm volatile ("mov %%cr2, %0" : "=a"(cr2)); 
+        kprintDS("[KDEBUG]", "Congrates: you fucked up with a nice <%s> have fun debugging this", exceptionMessages[stack->isrNumber]);
+        kprintDS("[KDEBUG]", "RAX: %a | RBX: %a | RCX: %a | RDX: %a", stack->rax, stack->rbx, stack->rcx, stack->rdx);
+        kprintDS("[KDEBUG]", "RSI: %a | RDI: %a | RBP: %a | RSP: %a", stack->rsi, stack->rdi, stack->rbp, stack->rsp);
+        kprintDS("[KDEBUG]", "r8:  %a | r9:  %a | r10: %a | r11: %a", stack->r8, stack->r9, stack->r10, stack->r11); 
+        kprintDS("[KDEBUG]", "r12: %a | r13: %a | r14: %a | r15: %a", stack->r12, stack->r13, stack->r14, stack->r15); 
+        kprintDS("[KDEBUG]", "cr2: %a | rip: %a", cr2, stack->rip);
+        for(;;);
     }
 }
 

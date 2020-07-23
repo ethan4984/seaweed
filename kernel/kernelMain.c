@@ -16,6 +16,8 @@
 extern symbol bssBegin;
 extern symbol bssEnd;
 
+extern void testDiv();
+
 __attribute__((section(".init")))
 void bootMain(bproto_t *bproto) {
     memset(bssBegin, 0, bssEnd - bssBegin); // zero out .bss
@@ -49,6 +51,8 @@ void bootMain(bproto_t *bproto) {
     idtInit();
 
     initSMP();
+
+    testDiv();
 
     for(;;);
 }

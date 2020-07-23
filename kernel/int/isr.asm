@@ -313,3 +313,12 @@ isr 252
 isr 253
 isr 254
 isr 255
+
+global testDiv
+
+testDiv:
+    mov rdx, 0
+    mov rax, 250
+    mov rcx, 0
+    div rcx
+    ret

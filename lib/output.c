@@ -13,7 +13,8 @@ typedef struct {
 prefixList_t prefixList[] = {   { "[KDEBUG]", GREEN, YELLOW },
                                 { "[KMM]", GREEN, LIGHTRED },
                                 { "[ACPI]", MAGENTA, CYAN },
-                                { "[APIC]", RED, GREEN }
+                                { "[APIC]", RED, GREEN },
+                                { "[SMP]", YELLOW, LIGHTBLUE }
                             };
                             
 const char *bashColours[] = {   "\e[39m", "\e[30m", "\e[31m", "\e[32m",
@@ -72,6 +73,15 @@ void kprintDS(const char *prefix, const char *str, ...) { // debug serial
                 case 'x':
                     hold = va_arg(arg, uint64_t);
                     string = itob(hold, 16);
+                    for(size_t i = 0; i < strlen(string); i++)
+                        serialWrite(string[i]);
+                    break;
+                case 'a':
+                    hold = va_arg(arg, uint64_t);
+                    string = itob(hold, 16);
+                    int offset_zeros = 16 - strlen(string);
+                    for(int i = 0; i < offset_zeros; i++)
+                        serialWrite('0');
                     for(size_t i = 0; i < strlen(string); i++)
                         serialWrite(string[i]);
                     break;
