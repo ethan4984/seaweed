@@ -46,4 +46,6 @@ void *findSDT(char *signature) {
     }
 
     kprintDS("[ACPI]", "%s could not be found :(", signature);
+
+    return NULL;
 }

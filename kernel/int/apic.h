@@ -9,6 +9,10 @@ uint32_t ioapicRead(uint64_t ioapicBase, uint32_t reg);
 
 void ioapicWrite(uint64_t ioapicBase, uint32_t reg, uint32_t data);
 
+void sendIPI(uint8_t ap, uint32_t ipi);
+
+void initAPIC();
+
 #define LAPIC_REG_ID 0x20
 #define LAPIC_REG_VER 0x30
 #define LAPIC_REG_TPR 0x80
@@ -62,7 +66,5 @@ void ioapicWrite(uint64_t ioapicBase, uint32_t reg, uint32_t data);
 #define LAPIC_REG_TIMER_DIVCONF 0x3e0
 
 #define IA32_APIC_BASE 0x1b
-
-void initAPIC();
 
 #endif

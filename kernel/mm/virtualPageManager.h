@@ -40,4 +40,6 @@ void freeAddressSpace(uint64_t index);
 
 void initVMM();
 
+uint64_t grabPML4();
+
 #endif

@@ -1,5 +1,6 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
+#include <kernel/sched/smp.h>
 #include <kernel/acpi/rsdp.h>
 #include <kernel/acpi/madt.h>
 #include <kernel/int/apic.h>
@@ -33,9 +34,11 @@ void bootMain(bproto_t *bproto) {
         kprintDS("[KDEBUG]", "[%x -> %x] : length %x type %x", mmapEntries[i].base, mmapEntries[i].base + mmapEntries[i].length, mmapEntries[i].length, mmapEntries[i].type);
     }
 
-    register uint64_t rsp asm ("rsp") = physicalPageAlloc(4) + 0x4000 + KERNEL_HIGH_VMA; //
-
     initPMM(bproto);
+
+    uint64_t stack = physicalPageAlloc(4) + 0x4000 + KERNEL_HIGH_VMA;
+    asm volatile ("movq %0, %%rsp" : "=r"(stack)); 
+
     kHeapInit();
     initVMM();
 
@@ -44,6 +47,8 @@ void bootMain(bproto_t *bproto) {
     madtInit();
     initAPIC();
     idtInit();
+
+    initSMP();
 
     for(;;);
 }

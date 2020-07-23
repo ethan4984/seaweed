@@ -1,8 +1,10 @@
+#include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/kHeap.h>
 #include <kernel/acpi/madt.h>
 #include <kernel/int/apic.h> 
 #include <lib/asmUtils.h>
+#include <lib/memUtils.h>
 #include <lib/output.h>
 
 madtInfo_t madtInfo;
@@ -29,7 +31,6 @@ void sendIPI(uint8_t ap, uint32_t ipi) {
     lapicWrite(LAPIC_REG_ICR1, (ap << 24));
     lapicWrite(LAPIC_REG_ICR0, ipi);
 }
-
 
 void initAPIC() {
     /* remap pic */
@@ -58,8 +59,5 @@ void initAPIC() {
         kprintDS("[APIC]", "A full bruh momento just occoured, we would not your lapic to work :("); 
     }
 
-    for(int i = 1; i < madtInfo.madtEntry0Count; i++) {
-        kprintDS("[APIC]", "Startup IPI send to core %d", i);
-        sendIPI(i, 0x500);
-    }
+    asm volatile ("sti");
 }

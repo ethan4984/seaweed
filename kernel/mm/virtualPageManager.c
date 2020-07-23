@@ -88,6 +88,12 @@ void initAddressSpace(uint64_t index) {
     asm volatile("movq %0, %%cr3" :: "r" (pageDirectoryTables[index].pml4) : "memory");
 }
 
+uint64_t grabPML4() {
+    uint64_t pml4;
+    asm volatile ("movq %%cr3, %0" : "=r"(pml4));
+    return pml4;
+}
+
 void initVMM() {
     pageDirectoryTables = kmalloc(sizeof(pageDirectoryEntry_t) * 100);
     pageDirectoryCount = 100;
@@ -96,6 +102,7 @@ void initVMM() {
     memset((void*)kpml4Addr, 0, 0x5000); 
 
     kpml4[256] = ((uint64_t)&kpml3[0]) | (1 << 8) | 0x3; // set as global and present and r/w
+    kpml4[0] = ((uint64_t)&kpml3[0]) | (1 << 8) | 0x3; // set as global and present and r/w
     kpml3[0] = ((uint64_t)&kpml2_1G[0]) | (1 << 8) | 0x3;
     kpml3[1] = ((uint64_t)&kpml2_2G[0]) | (1 << 8) | 0x3;
     kpml3[2] = ((uint64_t)&kpml2_3G[0]) | (1 << 8) | 0x3;
@@ -125,4 +132,5 @@ static uint64_t findFirstFreeSlot() {
             return i; 
         }
     }
+    return -1;
 }

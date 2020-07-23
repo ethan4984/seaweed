@@ -9,13 +9,13 @@
 uint64_t kHeapBegin;
 
 uint8_t *kbitmap;
-uint64_t kbitmapSize;
+int64_t kbitmapSize;
 
-uint64_t allocationBitmapSize;
+int64_t allocationBitmapSize;
 allocation_t *allocationBitmap;
 
-static uint64_t firstFreeSlot();
-static uint64_t firstFreeAllocationSlot();
+static int64_t firstFreeSlot();
+static int64_t firstFreeAllocationSlot();
 
 void kHeapInit() {
     kHeapBegin = physicalPageAlloc(8); // allocate a 32kb heap
@@ -35,9 +35,9 @@ void kHeapInit() {
 }
 
 void *kmalloc(uint64_t size) {
-    uint64_t cnt = 0, blockCount = ROUNDUP(size, 32);
+    int64_t cnt = 0, blockCount = ROUNDUP(size, 32);
     void *base = (void*)(firstFreeSlot() * BLOCKSIZE);
-    for(uint64_t i = firstFreeSlot(); i < kbitmapSize; i++) {
+    for(int64_t i = firstFreeSlot(); i < kbitmapSize; i++) {
         if(isset(kbitmap, i)) {
             base += (cnt + 1) * BLOCKSIZE;
             cnt = 0;
@@ -50,7 +50,7 @@ void *kmalloc(uint64_t size) {
             allocationBitmap[slot].size = blockCount;
             allocationBitmap[slot].block = (uint64_t)base / 32; 
 
-            for(uint64_t j = 0; j < blockCount; j++) {
+            for(int64_t j = 0; j < blockCount; j++) {
                 set(kbitmap, (uint64_t)base / BLOCKSIZE + j);
             }
 
@@ -64,7 +64,7 @@ void *kmalloc(uint64_t size) {
 void kfree(void *addr) {
     uint64_t bitmapBase = ((uint64_t)addr - HIGH_VMA - kHeapBegin) / 32; 
     
-    uint64_t i;
+    int64_t i;
     for(i = 0; i < allocationBitmapSize; i++) {
         if(allocationBitmap[i].block == bitmapBase)
             break;
@@ -78,17 +78,19 @@ void kfree(void *addr) {
     allocationBitmap[i].block = 0;
 }
 
-static uint64_t firstFreeSlot() {
-    for(uint64_t i = 0; i < kbitmapSize; i++) {
+static int64_t firstFreeSlot() {
+    for(int64_t i = 0; i < kbitmapSize; i++) {
         if(!isset(kbitmap, i))
             return i;
     }
+    return -1;
 }
 
-static uint64_t firstFreeAllocationSlot() {
-    for(uint64_t i = 0; i < allocationBitmapSize; i++) {
+static int64_t firstFreeAllocationSlot() {
+    for(int64_t i = 0; i < allocationBitmapSize; i++) {
         if(allocationBitmap[i].size == 0) {
             return i;
         }
     }
+    return -1;
 }

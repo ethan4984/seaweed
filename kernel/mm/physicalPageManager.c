@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 static void allocateRegion(uint64_t start, uint64_t length);
-static uint64_t firstFreePage();
+static int64_t firstFreePage();
 
 uint8_t *bitmap;
 uint64_t totalDetectedMemory = 0;
@@ -47,6 +47,7 @@ uint64_t physicalPageAlloc(uint64_t count) {
             return base; 
         }
     }
+    return 0;
 }
 
 void physicalPageFree(uint64_t base, uint64_t count) {
@@ -61,10 +62,11 @@ static void allocateRegion(uint64_t start, uint64_t length) {
     }
 }
 
-static uint64_t firstFreePage() {
+static int64_t firstFreePage() {
     for(uint64_t i = 0; i < totalDetectedMemory / PAGESIZE; i++) {
         if(!isset(bitmap, i)) {
             return i;
         }
     }
+    return -1;
 }

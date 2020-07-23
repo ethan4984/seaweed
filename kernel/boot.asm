@@ -62,7 +62,7 @@ e820:
 
 .exit:
 
-jmp 0x7e00
+jmp 0x8000
 
 times 218-($-$$) db 0
 times 6 db 0
@@ -135,6 +135,61 @@ times 0x1b8-($-$$) db 0 ; partition entry structures (left blanck dont touch)
 
 times 510-($-$$) db 0
 dw 0xaa55 ; boot signature
+
+cld
+jmp 0:initCSTramp
+
+initCSTramp:
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov sp, 0x7c00
+
+in al, 0x92
+or al, 2
+out 0x92, al ; enables a20 line
+
+lgdt[GDT]
+
+mov eax, dword [0x500 + 8]
+mov cr3, eax
+
+mov eax, cr4
+or eax, (1 << 5) | (1 << 7) ; set PAE and PGE
+mov cr4, eax
+
+mov ecx, 0xc0000080
+rdmsr
+or eax, (1 << 8) ; LME enable
+wrmsr
+
+mov eax, cr0
+or eax, (1 << 31) | (1 << 0)
+mov cr0, eax
+
+jmp GDT.CODE64 - GDT.start:smpLongModeCode
+
+bits 64
+
+smpLongModeCode:
+    mov ax, GDT.DATA64 - GDT.start
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    mov rsp, qword [0x500]
+    mov rbx, qword [0x500 + 16]
+
+    jmp rbx
+
+bits 16
+
+times 1024-($-$$) db 0
 
 mov word [DAP.numberOfSectors], 0x7e
 mov dword [DAP.offset], 0xfc00
