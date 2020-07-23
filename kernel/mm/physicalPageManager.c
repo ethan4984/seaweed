@@ -49,7 +49,7 @@ uint64_t physicalPageAlloc(uint64_t count) {
     }
 }
 
-void physicalPageFree(void *base, uint64_t count) {
+void physicalPageFree(uint64_t base, uint64_t count) {
     for(uint64_t i = ROUNDUP((uint64_t)base, PAGESIZE); i < ROUNDUP((uint64_t)base, PAGESIZE) + count; i++) {
         clear(bitmap, i);
     }

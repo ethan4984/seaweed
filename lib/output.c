@@ -11,7 +11,8 @@ typedef struct {
 } prefixList_t;
 
 prefixList_t prefixList[] = {   { "[KDEBUG]", GREEN, YELLOW },
-                                { "[KMM]", GREEN, LIGHTRED }
+                                { "[KMM]", GREEN, LIGHTRED },
+                                { "[ACPI]", MAGENTA, CYAN }
                             };
                             
 const char *bashColours[] = {   "\e[39m", "\e[30m", "\e[31m", "\e[32m",

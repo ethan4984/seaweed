@@ -1,6 +1,7 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/kHeap.h>
+#include <kernel/acpi/rsdp.h>
 #include <kernel/bproto.h>
 #include <lib/output.h>
 #include <lib/memUtils.h>
@@ -35,11 +36,7 @@ void bootMain(bproto_t *bproto) {
     kHeapInit();
     initVMM();
 
-    uint64_t bruh = createNewAddressSpace(2, 0x3);
-    initAddressSpace(bruh);
-
-    uint64_t bruh1 = createNewAddressSpace(69, 0x3);
-    initAddressSpace(bruh1);
+    rsdpInit((uint64_t*)(bproto->rsdp + HIGH_VMA));
 
     for(;;);
 }
