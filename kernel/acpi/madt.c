@@ -83,3 +83,7 @@ void madtInit() {
 
     kprintDS("[APIC]", "System core count: %d", madtInfo.madtEntry0Count);
 }
+
+madtInfo_t *grabMadt() {
+    return &madtInfo;
+}

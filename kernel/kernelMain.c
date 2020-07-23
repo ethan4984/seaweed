@@ -1,11 +1,12 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
-#include <kernel/mm/kHeap.h>
 #include <kernel/acpi/rsdp.h>
 #include <kernel/acpi/madt.h>
+#include <kernel/int/apic.h>
+#include <kernel/mm/kHeap.h>
 #include <kernel/bproto.h>
-#include <lib/output.h>
 #include <lib/memUtils.h>
+#include <lib/output.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -40,6 +41,7 @@ void bootMain(bproto_t *bproto) {
     rsdpInit((uint64_t*)(bproto->rsdp + HIGH_VMA));
 
     madtInit();
+    initAPIC();
 
     for(;;);
 }

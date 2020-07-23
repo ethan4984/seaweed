@@ -8,7 +8,10 @@
 
 uint64_t *kpml4 = (uint64_t*)kpml4Addr; 
 uint64_t *kpml3 = (uint64_t*)kpml3Addr; 
-uint64_t *kpml2 = (uint64_t*)kpml2Addr; 
+uint64_t *kpml2_1G = (uint64_t*)kpml2Addr_1G; 
+uint64_t *kpml2_2G = (uint64_t*)kpml2Addr_2G; 
+uint64_t *kpml2_3G = (uint64_t*)kpml2Addr_3G; 
+uint64_t *kpml2_4G = (uint64_t*)kpml2Addr_4G; 
 uint64_t *kpml3HH = (uint64_t*)kpml3AddrHH;
 uint64_t *kpml2HH = (uint64_t*)kpml2AddrHH;
 
@@ -93,14 +96,20 @@ void initVMM() {
     memset((void*)kpml4Addr, 0, 0x5000); 
 
     kpml4[256] = ((uint64_t)&kpml3[0]) | (1 << 8) | 0x3; // set as global and present and r/w
-    kpml3[0] = ((uint64_t)&kpml2[0]) | (1 << 8) | 0x3;
+    kpml3[0] = ((uint64_t)&kpml2_1G[0]) | (1 << 8) | 0x3;
+    kpml3[1] = ((uint64_t)&kpml2_2G[0]) | (1 << 8) | 0x3;
+    kpml3[2] = ((uint64_t)&kpml2_3G[0]) | (1 << 8) | 0x3;
+    kpml3[3] = ((uint64_t)&kpml2_4G[0]) | (1 << 8) | 0x3;
     
     kpml4[511] = ((uint64_t)&kpml3HH[0]) | (1 << 8) | 0x3;
     kpml3HH[510] = ((uint64_t)&kpml2HH[0]) | (1 << 8) | 0x3;
 
     uint64_t physical = 0;
     for(int i = 0; i < 512; i++) {
-        kpml2[i] = physical | (1 << 8) | (1 << 7) | 0x3; // set as global present and r/w and size
+        kpml2_1G[i] = physical | (1 << 8) | (1 << 7) | 0x3; // set as global present and r/w and size
+        kpml2_2G[i] = (physical + 0x40000000) | (1 << 8) | (1 << 7) | 0x3; // set as global present and r/w and size
+        kpml2_3G[i] = (physical + (uint64_t)0x40000000 * 2) | (1 << 8) | (1 << 7) | 0x3; // set as global present and r/w and size
+        kpml2_4G[i] = (physical + (uint64_t)0x40000000 * 3) | (1 << 8) | (1 << 7) | 0x3; // set as global present and r/w and size
         kpml2HH[i] = physical | (1 << 8) | (1 << 7) | 0x3;
         physical += 0x200000;
     }
