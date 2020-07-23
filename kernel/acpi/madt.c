@@ -6,11 +6,12 @@
 
 madtInfo_t madtInfo = { 0 };
 
+static void printMADT();
+
 void madtInit() {
     madt_t *madt = (madt_t*)findSDT("APIC");
 
     madtInfo.lapicAddr = madt->lapicAddr;
-    kprintDS("[APIC]", "lapic address %x", madtInfo.lapicAddr);
 
     madtInfo.madtEntry0 = kmalloc(sizeof(madtEntry0_t) * 50);
     madtInfo.madtEntry1 = kmalloc(sizeof(madtEntry1_t) * 50);
@@ -41,6 +42,10 @@ void madtInit() {
         i += entrySize - 3;
     }
 
+    kprintDS("[ACPI]", "Parsing MADT", madtInfo.madtEntry0Count);
+}
+
+static void printMADT() {
     for(uint64_t i = 0; i < madtInfo.madtEntry0Count; i++) {
         kprintDS("[APIC]", "Parsing madt0 entry %d", i);
         kprintDS("[APIC]", "Processor %ds lapic", i);
@@ -75,8 +80,7 @@ void madtInit() {
         kprintDS("[APIC]", "Parsing madt5 entry %d", i);
         kprintDS("[APIC]", "lapic override %x", madtInfo.madtEntry5[i].lapicOverride);
     }
-
-    kprintDS("[APIC]", "System core count: %d", madtInfo.madtEntry0Count);
+    
 }
 
 madtInfo_t grabMadt() {

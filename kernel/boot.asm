@@ -182,8 +182,11 @@ smpLongModeCode:
     mov gs, ax
     mov ss, ax
 
-    mov rsp, qword [0x500]
-    mov rbx, qword [0x500 + 16]
+    mov rsp, qword [0x500] ; stack
+    mov rbx, qword [0x500 + 16] ; entry point
+    mov rcx, qword [0x500 + 24] ; idt
+
+    lidt [rcx]
 
     jmp rbx
 

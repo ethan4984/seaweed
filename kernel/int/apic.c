@@ -53,6 +53,8 @@ void initAPIC() {
     wrmsr(IA32_APIC_BASE, (1 << 11)); // lapic enable
     lapicWrite(0xf0, lapicRead(0xf0) | 0x1ff); // enavle spurious interrupts
 
+    kprintDS("[APIC]", "Detected cpu cores %d", madtInfo.madtEntry0Count);
+
     if(rdmsr(IA32_APIC_BASE) & (1 << 11)) {
         kprintDS("[APIC]", "lapic enabled"); 
     } else {
