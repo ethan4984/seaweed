@@ -17,19 +17,9 @@ void lapicWrite(uint16_t offset, uint32_t data) {
     *(volatile uint32_t*)(madtInfo.lapicAddr + HIGH_VMA + offset) = data;
 }
 
-uint32_t ioapicRead(uint64_t ioapicBase, uint32_t reg) {
-    *(volatile uint32_t *)((uint64_t)ioapicBase + HIGH_VMA) = reg;
-    return *(volatile uint32_t *)((uint64_t)ioapicBase + 16 + HIGH_VMA);    
-}
-
-void ioapicWrite(uint64_t ioapicBase, uint32_t reg, uint32_t data) {
-    *(volatile uint32_t*)((uint64_t)ioapicBase + HIGH_VMA) = reg;
-    *(volatile uint32_t*)((uint64_t)ioapicBase + 16 + HIGH_VMA) = data;
-}
-
 void sendIPI(uint8_t ap, uint32_t ipi) {
-    lapicWrite(LAPIC_REG_ICR1, (ap << 24));
-    lapicWrite(LAPIC_REG_ICR0, ipi);
+    lapicWrite(LAPIC_ICRH, (ap << 24));
+    lapicWrite(LAPIC_ICRL, ipi);
 }
 
 void initAPIC() {
@@ -50,16 +40,16 @@ void initAPIC() {
 
     madtInfo = grabMadt();
 
-    wrmsr(IA32_APIC_BASE, (1 << 11)); // lapic enable
-    lapicWrite(0xf0, lapicRead(0xf0) | 0x1ff); // enavle spurious interrupts
+    wrmsr(MSR_APIC_BASE, (1 << 11)); // lapic enable
+    lapicWrite(LAPIC_SINT, lapicRead(LAPIC_SINT) | 0x1ff); // enavle spurious interrupts
 
     kprintDS("[APIC]", "Detected cpu cores %d", madtInfo.madtEntry0Count);
 
-    if(rdmsr(IA32_APIC_BASE) & (1 << 11)) {
+    if(rdmsr(MSR_APIC_BASE) & (1 << 11)) {
         kprintDS("[APIC]", "lapic enabled"); 
     } else {
-        kprintDS("[APIC]", "A full bruh momento just occoured, we would not your lapic to work :("); 
+        kprintDS("[APIC]", "A full bruh momento just occoured, we could not make your lapic to work :("); 
     }
 
-    asm volatile ("sti");
+    asm volatile ( "mov %0, %%cr8\n" "sti" :: "r"((uint64_t)0)); // set the TPR and also sti
 }

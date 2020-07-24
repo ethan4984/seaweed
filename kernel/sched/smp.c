@@ -20,8 +20,8 @@ void prepTrampoline(uint64_t stack, uint64_t pml4, uint64_t entryPoint, uint64_t
 }
 
 void kernelMainSMP() {
-    wrmsr(IA32_APIC_BASE, (1 << 11)); // lapic enable
-    lapicWrite(0xf0, lapicRead(0xf0) | 0x1ff); // enavle spurious interrupts
+    wrmsr(MSR_APIC_BASE, (1 << 11)); // lapic enable
+    lapicWrite(LAPIC_SINT, lapicRead(LAPIC_SINT) | 0x1ff); // enavle spurious interrupts
 
     asm volatile ("sti");
 

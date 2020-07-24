@@ -53,7 +53,8 @@ const char *exceptionMessages[] = { "Divide by zero",
                                   };
 
 extern void isrHandlerMain(regs_t *stack) {
-    if(stack->isrNumber <= 32) {
+    kprintDS("[KEBUG]", "le homo");
+/*    if(stack->isrNumber <= 32) {
         uint64_t cr2;
         asm volatile ("mov %%cr2, %0" : "=a"(cr2)); 
         kprintDS("[KDEBUG]", "Congrates: you fucked up with a nice <%s> have fun debugging this", exceptionMessages[stack->isrNumber]);
@@ -63,7 +64,7 @@ extern void isrHandlerMain(regs_t *stack) {
         kprintDS("[KDEBUG]", "r12: %a | r13: %a | r14: %a | r15: %a", stack->r12, stack->r13, stack->r14, stack->r15); 
         kprintDS("[KDEBUG]", "cr2: %a | rip: %a", cr2, stack->rip);
         for(;;);
-    }
+    }*/
 }
 
 void idtInit() {

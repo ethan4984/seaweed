@@ -50,7 +50,6 @@ isrHandler:
 %macro isr 1
 
 global isr%1
-global isr%1
 isr%1:
     push %1
     jmp isrHandler

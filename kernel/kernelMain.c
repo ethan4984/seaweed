@@ -1,5 +1,6 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
+#include <kernel/sched/hpet.h>
 #include <kernel/sched/smp.h>
 #include <kernel/acpi/rsdp.h>
 #include <kernel/acpi/madt.h>
@@ -46,13 +47,12 @@ void bootMain(bproto_t *bproto) {
 
     rsdpInit((uint64_t*)(bproto->rsdp + HIGH_VMA));
 
+    initHPET();
     madtInit();
     initAPIC();
     idtInit();
 
     initSMP();
-
-    testDiv();
 
     for(;;);
 }
