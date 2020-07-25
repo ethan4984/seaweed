@@ -2,6 +2,7 @@
 #define APIC_H
 
 #define MSR_APIC_BASE 0x1b
+#define ERROR 69420
 
 #define LAPIC_ID_REG 0x20
 #define LAPIC_VERSION_REG 0x30
