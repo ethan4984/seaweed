@@ -86,6 +86,22 @@ void maskGSI(uint32_t gsi) {
     writeRedirectionTable(gsi, redirectionTable | (1 << 16));
 }
 
+void lapicInit(uint64_t ticksPerMS) { 
+    ticksPerMS -= 10; // make up for ksleep 10
+
+    lapicWrite(LAPIC_TIMER_DIVIDE_CONF, 0x3);
+    ksleep(10);
+    lapicWrite(LAPIC_TIMER_INITAL_COUNT, 0xffffffff);
+
+    ksleep(ticksPerMS);
+
+    uint32_t ticks = 0xffffffff - lapicRead(LAPIC_TIMER_CURRENT_COUNT);
+
+    lapicWrite(LAPIC_TIMER_LVT, 32 | 0x20000);
+    lapicWrite(LAPIC_TIMER_DIVIDE_CONF, 0x3);
+    lapicWrite(LAPIC_TIMER_INITAL_COUNT, ticks);
+}
+
 void initAPIC() {
     /* remap pic */
     outb(0x20, 0x11);

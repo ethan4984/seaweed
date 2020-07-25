@@ -45,6 +45,7 @@ isrHandler:
     mov rdi, rsp 
     call isrHandlerMain
     popall
+    add rsp, 8
     iretq
 
 %macro isr 1

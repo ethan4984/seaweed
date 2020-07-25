@@ -8,12 +8,12 @@
 #define LAPIC_VERSION_REG 0x30
 #define LAPIC_TPR 0x80
 #define LAPIC_APR 0x90
-#define LAPIC_PPR 0xa
-#define LAPIC_EOI 0xb
+#define LAPIC_PPR 0xa0
+#define LAPIC_EOI 0xb0
 #define LAPIC_REMOTE_READ_REG 0xc
-#define LAPIC_LDR 0xd
-#define LAPIC_DFR 0xe
-#define LAPIC_SINT 0xf
+#define LAPIC_LDR 0xd0
+#define LAPIC_DFR 0xe0
+#define LAPIC_SINT 0xf0
 #define LAPIC_ISR0 0x100
 #define LAPIC_ISR1 0x110
 #define LAPIC_ISR2 0x120
@@ -49,7 +49,7 @@
 #define LAPIC_EVT 0x370
 #define LAPIC_TIMER_INITAL_COUNT 0x380
 #define LAPIC_TIMER_CURRENT_COUNT 0x390
-#define LAPIC_TIME_DIVIDE_CONF 0x3e0
+#define LAPIC_TIMER_DIVIDE_CONF 0x3e0
 #define LAPIC_EAPIC_FEATURE 0x400
 #define LAPIC_EAPIC_CONTROL 0x410
 #define LAPIC_SEOI 0x420
@@ -65,6 +65,8 @@
 #define LAPIC_ELVT1 0x510
 #define LAPIC_ELVT2 0x520
 #define LAPIC_ELVT3 0x530
+
+#include <stdint.h>
 
 uint32_t lapicRead(uint16_t offset);
 
