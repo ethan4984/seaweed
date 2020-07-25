@@ -10,6 +10,7 @@ build:
 	mkdir -p Bin
 	$(CC) $(CFLAGS) -c $(CSOURCE)
 	nasm -felf64 kernel/int/isr.asm -o isr.o
+	nasm -felf64 kernel/sched/scheduler.asm -o schedulerASM.o
 	$(CC) $(LDFLAGS) -T linker.ld *.o -o Bin/kernel.bin
 	nasm -fbin kernel/boot.asm -o seaweed
 	rm -f *.o Bin/kernel.bin 

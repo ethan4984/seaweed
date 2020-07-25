@@ -1,7 +1,13 @@
+#include <kernel/sched/scheduler.h>
 #include <kernel/int/apic.h>
 #include <kernel/int/idt.h>
 #include <lib/asmUtils.h>
 #include <lib/output.h>
+
+#include <stddef.h>
+
+eventHandlers_t eventHandlers[];
+const char *exceptionMessages[];
 
 idtEntry_t idt[256];
 idtr_t idtr;
@@ -16,48 +22,14 @@ void setIDTentry(uint8_t codeSelector, uint8_t index, uint8_t typesAndAttributes
     idt[index].zero32 = 0;
 }
 
-const char *exceptionMessages[] = { "Divide by zero",
-                                    "Debug",
-                                    "NMI",
-                                    "Breakpoint",
-                                    "Overflow",
-                                    "Bound Range Exceeded",
-                                    "Invaild Opcode",
-                                    "Device Not Available", 
-                                    "Double fault", 
-                                    "Co-processor Segment Overrun",
-                                    "Invaild TSS",
-                                    "Segment not present",
-                                    "Stack-Segment Fault",
-                                    "GPR",
-                                    "Page Fault",
-                                    "Reserved",
-                                    "x87 Floating Point Exception",
-                                    "allignement check",
-                                    "Machine check",
-                                    "SIMD floating-point exception",
-                                    "Virtualization Excpetion",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Security Exception",
-                                    "Reserved",
-                                    "Triple Fault", 
-                                    "FPU error"
-                                  };
-
 extern void isrHandlerMain(regs_t *stack) {
-        kprintDS("[KDEBUG]", "bruh");
+    if(eventHandlers[stack->isrNumber] != NULL) {
+        eventHandlers[stack->isrNumber](stack);
+    }
+
     if(stack->isrNumber < 32) {
         uint64_t cr2;
-        asm volatile ("mov %%cr2, %0" : "=a"(cr2)); 
+        asm volatile ("cli\n" "mov %%cr2, %0" : "=a"(cr2)); 
         kprintDS("[KDEBUG]", "Congrates: you fucked up with a nice <%s> have fun debugging this", exceptionMessages[stack->isrNumber]);
         kprintDS("[KDEBUG]", "RAX: %a | RBX: %a | RCX: %a | RDX: %a", stack->rax, stack->rbx, stack->rcx, stack->rdx);
         kprintDS("[KDEBUG]", "RSI: %a | RDI: %a | RBP: %a | RSP: %a", stack->rsi, stack->rdi, stack->rbp, stack->rsp);
@@ -331,3 +303,75 @@ void idtInit() {
 
     asm volatile ("lidtq %0" : "=m"(idtr));
 }
+
+const char *exceptionMessages[] = { "Divide by zero",
+                                    "Debug",
+                                    "NMI",
+                                    "Breakpoint",
+                                    "Overflow",
+                                    "Bound Range Exceeded",
+                                    "Invaild Opcode",
+                                    "Device Not Available", 
+                                    "Double fault", 
+                                    "Co-processor Segment Overrun",
+                                    "Invaild TSS",
+                                    "Segment not present",
+                                    "Stack-Segment Fault",
+                                    "GPR",
+                                    "Page Fault",
+                                    "Reserved",
+                                    "x87 Floating Point Exception",
+                                    "allignement check",
+                                    "Machine check",
+                                    "SIMD floating-point exception",
+                                    "Virtualization Excpetion",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Reserved",
+                                    "Security Exception",
+                                    "Reserved",
+                                    "Triple Fault", 
+                                    "FPU error"
+                                  };
+
+eventHandlers_t eventHandlers[] =   {
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 0 -> isr 7
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 7 -> 15
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 15 -> 23
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 23 -> 31
+                                        schedulerMain, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 31 -> 38
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, rescheduleCore, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+                                    };

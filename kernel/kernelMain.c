@@ -1,5 +1,6 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
+#include <kernel/sched/scheduler.h>
 #include <kernel/sched/hpet.h>
 #include <kernel/sched/smp.h>
 #include <kernel/acpi/rsdp.h>
@@ -18,6 +19,33 @@ extern symbol bssBegin;
 extern symbol bssEnd;
 
 extern void testDiv();
+
+void task1() {
+    static uint64_t bruh = 0;
+    while(1) {
+        for(int i = 0; i < 10000000; i++);
+        kprintDS("[SMP]", "Bruh lel %d", bruh);
+        bruh += 69420;
+    }
+}
+
+void task2() {
+    static uint64_t bruh = 0;
+    while(1) {
+        for(int i = 0; i < 10000000; i++);
+            kprintDS("[SMP]", "bruh %d", bruh);
+            bruh += 1;
+    }
+}
+
+void task3() {
+    static uint64_t bruh = 0;
+    while(1) {
+        for(int i = 0; i < 10000000; i++);
+            kprintDS("[SMP]", "bruh %d", bruh);
+            bruh += 2;
+    }
+}
 
 __attribute__((section(".init")))
 void bootMain(bproto_t *bproto) {
@@ -53,6 +81,7 @@ void bootMain(bproto_t *bproto) {
     idtInit();
 
     initSMP();
+    schedulerInit();
 
     for(;;);
 }

@@ -78,6 +78,8 @@ void ioapicWrite(uint64_t ioapicBase, uint32_t reg, uint32_t data);
 
 void sendIPI(uint8_t ap, uint32_t ipi);
 
+void lapicTimerInit(uint64_t TicksPerMS);
+
 void initAPIC();
 
 #endif

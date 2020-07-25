@@ -86,7 +86,7 @@ void maskGSI(uint32_t gsi) {
     writeRedirectionTable(gsi, redirectionTable | (1 << 16));
 }
 
-void lapicInit(uint64_t ticksPerMS) { 
+void lapicTimerInit(uint64_t ticksPerMS) { 
     ticksPerMS -= 10; // make up for ksleep 10
 
     lapicWrite(LAPIC_TIMER_DIVIDE_CONF, 0x3);
@@ -140,5 +140,7 @@ void initAPIC() {
         writeRedirectionTable(i, i + 32);
     }
 
-    asm volatile ( "mov %0, %%cr8\n" "sti" :: "r"((uint64_t)0)); // set the TPR and also sti
+    asm volatile("mov %0, %%cr8\n" "sti" :: "r"((uint64_t)0)); // set the TPR and also sti
+
+    lapicTimerInit(50);
 }

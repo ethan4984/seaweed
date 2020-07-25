@@ -61,8 +61,8 @@ void *kmalloc(uint64_t size) {
     return NULL;
 }
 
-void kfree(void *addr) {
-    uint64_t bitmapBase = ((uint64_t)addr - HIGH_VMA - kHeapBegin) / 32; 
+uint64_t kfree(void *addr) {
+    uint64_t bitmapBase = ((uint64_t)addr - HIGH_VMA - kHeapBegin) / 32, sizeOfAllocation = 0; 
     
     int64_t i;
     for(i = 0; i < allocationBitmapSize; i++) {
@@ -70,12 +70,23 @@ void kfree(void *addr) {
             break;
     }
 
-    for(uint64_t j = bitmapBase; j < bitmapBase + allocationBitmap[i].size; j++) {
+    sizeOfAllocation = allocationBitmap[i].size;
+
+    for(uint64_t j = bitmapBase; j < bitmapBase + sizeOfAllocation; j++) {
         clear(kbitmap, j);
     }
 
     allocationBitmap[i].size = 0;
     allocationBitmap[i].block = 0;
+
+    return sizeOfAllocation;
+}
+
+void *krealloc(void *addr, uint64_t size) {
+    uint64_t sizeOfAllocation = kfree(addr);
+    void *newAddr = kmalloc(sizeOfAllocation + size);
+    memcpy64(newAddr, addr, sizeOfAllocation);
+    return newAddr;
 }
 
 static int64_t firstFreeSlot() {

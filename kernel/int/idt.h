@@ -1,7 +1,11 @@
 #ifndef IDT_H
 #define IDT_H
 
+#include <lib/asmUtils.h>
+
 #include <stdint.h>
+
+typedef void (*eventHandlers_t)(regs_t*);
 
 typedef struct {
     uint16_t offsetLow;
