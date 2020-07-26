@@ -81,11 +81,14 @@ void bootMain(bproto_t *bproto) {
     idtInit();
 
     initSMP();
+
     schedulerInit();
 
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task1);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task2);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task3);
+
+    lapicTimerInit(100);
 
     for(;;);
 }

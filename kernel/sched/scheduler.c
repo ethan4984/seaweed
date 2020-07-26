@@ -9,7 +9,7 @@
 #include <lib/output.h>
 
 static uint64_t findCore();
-static void scheduleTask(task_t task, uint64_t core, uint8_t status, regs_t *regs);
+static void startTaskSMP(task_t task, uint64_t core, uint8_t status, regs_t *regs);
 static int64_t findFreeIndex();
 
 cpuInfo_t *cpuInfo;
@@ -20,29 +20,24 @@ uint64_t numberOfTasks = 0, maxNumberOfTasks = 10;
 void schedulerMain(regs_t *regs) {
     asm volatile ("cli");
 
-    static bool homo = false;
-    
-    for(uint64_t i = 0; i < numberOfTasks; i++) { /* start tasks for the first time that havent */
-        if(tasks[i].status == WAITING_TO_START) {
-            uint64_t core = findCore();
-            cpuInfo[core].numberOfTasks++;
-            tasks[i].status = RUNNING;
-            kprintDS("[SMP]", "Creating task on stack %x", tasks[i].rsp);
-            scheduleTask(tasks[i], core + 1, START_TASK, regs);
-            ksleep(10);
-        }
-    }
-    
-    if(!homo) {
-        scheduleTask(tasks[1], 1, SWITCH_TASK, regs);
-        scheduleTask(tasks[0], 2, SWITCH_TASK, regs);
-        homo = true;
-    }
+    static bool bruh = false;
+    if(!bruh) {
+        kprintDS("[SMP]", "Starting a task with rsp %x", tasks[0].rsp);
+        kprintDS("[SMP]", "Starting a task with rsp %x", tasks[1].rsp);
+        startTaskSMP(tasks[0], 1, START_TASK, regs);
+        ksleep(10);
+        startTaskSMP(tasks[1], 2, START_TASK, regs);
+        ksleep(10);
+        startTaskSMP(tasks[2], 3, START_TASK, regs);
+        bruh = true;
+    } 
 
     asm volatile ("sti");
 }
 
-static void scheduleTask(task_t task, uint64_t core, uint8_t status, regs_t *regs) {
+/* choose whatever core and start that task there */
+
+static void startTaskSMP(task_t task, uint64_t core, uint8_t status, regs_t *regs) {
     static uint64_t lock = 0;
     spinLock((uint64_t)&lock);
 
@@ -56,6 +51,18 @@ static void scheduleTask(task_t task, uint64_t core, uint8_t status, regs_t *reg
     sendIPI(core, 69);
     lock = 0;
 }
+
+void switchTaskSMP(task_t task, uint64_t core, uint8_t status, regs_t *regs) {
+    static uint64_t lock = 0;
+    spinLock((uint64_t)&lock);
+
+    uint64_t *parameters = (uint64_t*)0x500;
+    parameters[0] = status;
+   
+    lock = 0;
+}
+
+/* find the core with the least ammount of tasks on it */
 
 static uint64_t findCore() {
     uint64_t core = cpuInfo[0].numberOfTasks, override = 0;
@@ -73,6 +80,8 @@ static uint64_t findCore() {
     
     return override;
 }
+
+/* an isr hanlder designed to be exeuted upon IPI */
 
 void rescheduleCore(regs_t *regs) {
     uint64_t *parameters = (uint64_t*)0x500;  
@@ -104,7 +113,6 @@ void rescheduleCore(regs_t *regs) {
 void schedulerInit() {
     cpuInfo = grabCPUinfo();
     tasks = kmalloc(sizeof(task_t) * 10);
-    lapicTimerInit(100);
 }
 
 void createNewTask(uint64_t rsp, uint64_t entryPoint) {
@@ -114,6 +122,8 @@ void createNewTask(uint64_t rsp, uint64_t entryPoint) {
         tasks = krealloc(tasks, sizeof(task_t) * 10);
         maxNumberOfTasks += 10;
     }
+
+    kprintDS("[SMP]", "Current index %d", currentIndex);
 
     task_t task = { WAITING_TO_START, 0, rsp, rsp,  entryPoint };
     tasks[currentIndex] = task;
