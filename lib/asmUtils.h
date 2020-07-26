@@ -26,7 +26,6 @@ typedef struct {
     uint64_t rax;
     uint64_t core;
     uint64_t isrNumber;
-    uint64_t eventStructure;
     uint64_t rip;
     uint64_t cs; 
     uint64_t rflags; 

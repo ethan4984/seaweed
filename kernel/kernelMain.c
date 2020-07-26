@@ -23,7 +23,7 @@ extern void testDiv();
 void task1() {
     static uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 1000000; i++);
+        for(int i = 0; i < 100000000; i++);
         kprintDS("[SMP]", "Bruh lel %d", bruh);
         bruh += 69420;
     }
@@ -32,7 +32,7 @@ void task1() {
 void task2() {
     static uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 1000000; i++);
+        for(int i = 0; i < 100000000; i++);
             kprintDS("[SMP]", "bruh %d", bruh);
             bruh += 1;
     }
@@ -41,7 +41,7 @@ void task2() {
 void task3() {
     static uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 1000000; i++);
+        for(int i = 0; i < 100000000; i++);
             kprintDS("[SMP]", "bruh %d", bruh);
             bruh += 2;
     }
@@ -83,9 +83,9 @@ void bootMain(bproto_t *bproto) {
     initSMP();
     schedulerInit();
 
-    createNewTask(physicalPageAlloc(1) + 0x1000, (uint64_t)&task1);
-    createNewTask(physicalPageAlloc(1) + 0x1000, (uint64_t)&task2);
-    createNewTask(physicalPageAlloc(1) + 0x1000, (uint64_t)&task3);
+    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task1);
+    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task2);
+    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task3);
 
     for(;;);
 }

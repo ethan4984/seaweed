@@ -15,17 +15,19 @@ switchTask:
 
     popall
     sti
+    add rsp, 16
     iretq
 
 global spinLock
 
+extern ksleep
+
 spinLock:
     lock bts dword [rdi], 0
-    jc .loop
+    jc .l1
     ret
 
-.loop:
-    pause
+.l1:
     test dword [rdi], 1
-    jnz .loop
+    jnz .l1
     jmp spinLock

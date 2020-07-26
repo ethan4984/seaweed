@@ -9,6 +9,7 @@
 extern void startTask(uint64_t rsp, uint64_t entryPoint);
 extern void switchTask(uint64_t rsp, uint64_t rbp);
 extern void spinLock(uint64_t lock);
+extern void endOfInterrupt();
 
 enum {
     WAITING_TO_START,

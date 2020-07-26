@@ -9,7 +9,7 @@
 #include <lib/output.h>
 
 static uint64_t findCore();
-static void scheduleTask(task_t task, uint64_t core, uint8_t status);
+static void scheduleTask(task_t task, uint64_t core, uint8_t status, regs_t *regs);
 static int64_t findFreeIndex();
 
 cpuInfo_t *cpuInfo;
@@ -19,30 +19,42 @@ uint64_t numberOfTasks = 0, maxNumberOfTasks = 10;
 
 void schedulerMain(regs_t *regs) {
     asm volatile ("cli");
-    
-    kprintDS("[SMP]", "Bruh");
 
+    static bool homo = false;
+    
     for(uint64_t i = 0; i < numberOfTasks; i++) { /* start tasks for the first time that havent */
         if(tasks[i].status == WAITING_TO_START) {
             uint64_t core = findCore();
-            kprintDS("[SMP]", "Running task on core %d", core);
             cpuInfo[core].numberOfTasks++;
             tasks[i].status = RUNNING;
-            scheduleTask(tasks[i], core, START_TASK);
+            kprintDS("[SMP]", "Creating task on stack %x", tasks[i].rsp);
+            scheduleTask(tasks[i], core + 1, START_TASK, regs);
+            ksleep(10);
         }
+    }
+    
+    if(!homo) {
+        scheduleTask(tasks[1], 1, SWITCH_TASK, regs);
+        scheduleTask(tasks[0], 2, SWITCH_TASK, regs);
+        homo = true;
     }
 
     asm volatile ("sti");
 }
 
-static void scheduleTask(task_t task, uint64_t core, uint8_t status) {
+static void scheduleTask(task_t task, uint64_t core, uint8_t status, regs_t *regs) {
+    static uint64_t lock = 0;
+    spinLock((uint64_t)&lock);
+
     uint64_t *parameters = (uint64_t*)0x500;
     parameters[0] = status;
     parameters[1] = task.rsp;
     parameters[2] = task.rbp;
     parameters[3] = task.entryPoint;
 
+    kprintDS("[SMP]", "here");
     sendIPI(core, 69);
+    lock = 0;
 }
 
 static uint64_t findCore() {
@@ -65,7 +77,7 @@ static uint64_t findCore() {
 void rescheduleCore(regs_t *regs) {
     uint64_t *parameters = (uint64_t*)0x500;  
 
-    kprintDS("[SMP]", "Helloo");
+    kprintDS("[SMP]", "Hi from core %x", lapicRead(LAPIC_ID_REG));
 
     uint64_t type = parameters[0];
     
