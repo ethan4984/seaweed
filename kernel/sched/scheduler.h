@@ -8,6 +8,7 @@
 
 extern void startTask(uint64_t rsp, uint64_t entryPoint);
 extern void switchTask(uint64_t rsp, uint64_t rbp);
+extern void spinLock(uint64_t lock);
 
 enum {
     WAITING_TO_START,
@@ -30,5 +31,7 @@ void schedulerInit();
 void rescheduleCore(regs_t *regs);
 
 void schedulerMain(regs_t *regs);
+
+void createNewTask(uint64_t rsp, uint64_t entryPoint);
 
 #endif

@@ -14,7 +14,7 @@ madtInfo_t madtInfo;
 idtr_t idtr;
 
 cpuInfo_t *cpuInfo;
-uint64_t cpuInfoIndex;
+uint64_t cpuInfoIndex, numberOfCores = 1;
 
 void prepTrampoline(uint64_t stack, uint64_t pml4, uint64_t entryPoint, uint64_t idt) {
     uint64_t *arguments = (uint64_t*)(0x500 + HIGH_VMA);
@@ -22,6 +22,7 @@ void prepTrampoline(uint64_t stack, uint64_t pml4, uint64_t entryPoint, uint64_t
     arguments[1] = pml4;
     arguments[2] = entryPoint;
     arguments[3] = idt;
+    arguments[4] = numberOfCores++;
 }
 
 void kernelMainSMP() {

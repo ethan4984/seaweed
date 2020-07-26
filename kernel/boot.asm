@@ -185,6 +185,9 @@ smpLongModeCode:
     mov rsp, qword [0x500] ; stack
     mov rbx, qword [0x500 + 16] ; entry point
     mov rcx, qword [0x500 + 24] ; idt
+    mov rax, qword [0x500 + 32] ; core number
+
+    mov fs, ax
 
     lidt [rcx]
 
@@ -285,6 +288,9 @@ longModeCode:
     mov fs, ax
     mov gs, ax
     mov ss, ax
+
+    xor ax, ax
+    mov fs, ax
 
     call findRSDP
 

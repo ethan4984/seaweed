@@ -1,3 +1,4 @@
+#include <kernel/sched/scheduler.h>
 #include <lib/output.h>
 #include <lib/asmUtils.h>
 #include <lib/string.h>
@@ -27,6 +28,9 @@ const char *bashColours[] = {   "\e[39m", "\e[30m", "\e[31m", "\e[32m",
 static void serialWriteString(const char *str);
 
 void kprintDS(const char *prefix, const char *str, ...) { // debug serial
+    static uint64_t lock = 0; 
+    spinLock((uint64_t)&lock);
+
     uint64_t hold = 0;
     char *string;
     char character;
@@ -90,6 +94,8 @@ void kprintDS(const char *prefix, const char *str, ...) { // debug serial
     }
     va_end(arg);
     serialWrite('\n'); 
+
+    lock = 0;
 }
 
 static void serialWriteString(const char *str) {

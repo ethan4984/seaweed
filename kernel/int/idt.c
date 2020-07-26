@@ -23,6 +23,7 @@ void setIDTentry(uint8_t codeSelector, uint8_t index, uint8_t typesAndAttributes
 }
 
 extern void isrHandlerMain(regs_t *stack) {
+    lapicWrite(LAPIC_EOI, 0);
     if(eventHandlers[stack->isrNumber] != NULL) {
         eventHandlers[stack->isrNumber](stack);
     }
@@ -30,7 +31,7 @@ extern void isrHandlerMain(regs_t *stack) {
     if(stack->isrNumber < 32) {
         uint64_t cr2;
         asm volatile ("cli\n" "mov %%cr2, %0" : "=a"(cr2)); 
-        kprintDS("[KDEBUG]", "Congrates: you fucked up with a nice <%s> have fun debugging this", exceptionMessages[stack->isrNumber]);
+        kprintDS("[KDEBUG]", "Congrates: you fucked up with a nice <%s> on core %d, have fun debugging this", exceptionMessages[stack->isrNumber], stack->core);
         kprintDS("[KDEBUG]", "RAX: %a | RBX: %a | RCX: %a | RDX: %a", stack->rax, stack->rbx, stack->rcx, stack->rdx);
         kprintDS("[KDEBUG]", "RSI: %a | RDI: %a | RBP: %a | RSP: %a", stack->rsi, stack->rdi, stack->rbp, stack->rsp);
         kprintDS("[KDEBUG]", "r8:  %a | r9:  %a | r10: %a | r11: %a", stack->r8, stack->r9, stack->r10, stack->r11); 
@@ -38,10 +39,10 @@ extern void isrHandlerMain(regs_t *stack) {
         kprintDS("[KDEBUG]", "cr2: %a | rip: %a", cr2, stack->rip);
         for(;;);
     }
-    lapicWrite(LAPIC_EOI, 0);
 }
 
 void idtInit() {
+    eventHandlers[69] = rescheduleCore;
     setIDTentry(40, 0, 0x8f, (uint64_t)isr0);
     setIDTentry(40, 1, 0x8f, (uint64_t)isr1);
     setIDTentry(40, 2, 0x8f, (uint64_t)isr2);
@@ -342,15 +343,15 @@ const char *exceptionMessages[] = { "Divide by zero",
                                   };
 
 eventHandlers_t eventHandlers[] =   {
-                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 0 -> isr 7
-                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 7 -> 15
-                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 15 -> 23
-                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 23 -> 31
-                                        schedulerMain, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // isr 31 -> 38
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                        schedulerMain, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                                        NULL, NULL, NULL, NULL, rescheduleCore, NULL, NULL, NULL,
+                                        NULL, NULL, rescheduleCore, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,

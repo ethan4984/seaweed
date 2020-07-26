@@ -7,7 +7,7 @@ isrHandler:
     mov rdi, rsp 
     call isrHandlerMain
     popall
-    add rsp, 8
+    add rsp, 16
     iretq
 
 %macro isr 1
@@ -15,6 +15,8 @@ isrHandler:
 global isr%1
 isr%1:
     push %1
+    mov rax, fs
+    push rax 
     jmp isrHandler
 
 %endmacro
