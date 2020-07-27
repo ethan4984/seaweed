@@ -31,12 +31,10 @@ void schedulerMain(regs_t *regs) {
 
     if(numberOfTasks == 0) {
         lock = 0;
-        asm volatile ("sti");
         return;
     }
 
-    serialWrite('\n');
-    kprintDS("[SMP]", "Hi from core %d", regs->core);
+    //kprintDS("[SMP]", "Hi from core %d", regs->core);
     for(uint64_t i = 0; i < numberOfTasks; i++) {
         kprintDS("[SMP]", "task %d with stack of %x and status of %d", i, tasks[i].rsp, tasks[i].status);
     }
@@ -60,13 +58,13 @@ void schedulerMain(regs_t *regs) {
             nextTaskIndex--;
         }
 
-        kprintDS("[SMP]", "%d", nextTaskIndex);
+        //kprintDS("[SMP]", "%d", nextTaskIndex);
 
         if(tasks[nextTaskIndex - 1].status == WAITING || tasks[nextTaskIndex - 1].status == WAITING_TO_START)
             break;
 
         if(i + 1 == numberOfTasks) {
-            kprintDS("[SMP]", "Cant find any tasks to schedule");
+            //kprintDS("[SMP]", "Cant find any tasks to schedule");
             lock = 0;
             asm volatile ("sti");
             return;
@@ -75,12 +73,12 @@ void schedulerMain(regs_t *regs) {
 
     nextTaskIndex--;
 
-/*    if(oldTask != -1) {
-        kprintDS("[SMP]", "old task is not -1");
+    if(tasks[oldTask].status == RUNNING) {
+        kprintDS("[SMP]", "Saving tasks state %d", oldTask);
         tasks[oldTask].rsp = (uint64_t)regs;
         tasks[oldTask].rbp = (uint64_t)regs;
         tasks[oldTask].status = WAITING;
-    }*/
+    }
 
     cpuInfo[regs->core].currentTask = nextTaskIndex;
 
@@ -88,17 +86,15 @@ void schedulerMain(regs_t *regs) {
 
     if(tasks[nextTaskIndex].status == WAITING_TO_START) {
         tasks[nextTaskIndex].status = RUNNING; 
-        kprintDS("[SMP]", "starting task %d with stack %x", nextTaskIndex, tasks[nextTaskIndex].rsp);
-        asm volatile ("sti");
+        kprintDS("[SMP]", "starting task %d with stack %x on core %d", nextTaskIndex, tasks[nextTaskIndex].rsp, regs->core);
         lock = 0;
         startTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].entryPoint);
     }
 
-    kprintDS("[SMP]", "switching to task index %d", nextTaskIndex);
-    tasks[nextTaskIndex].status == RUNNING;
+    kprintDS("[SMP]", "switching to task index %d with stack %x on core %d", nextTaskIndex, tasks[nextTaskIndex].rsp, regs->core);
+    tasks[nextTaskIndex].status = RUNNING;
     lock = 0;
-    asm volatile ("sti");
-    switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rsp);
+    switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rbp);
 }
 
 void schedulerInit() {

@@ -4,6 +4,7 @@ global startTask
 
 startTask:
     mov rsp, rdi
+    mov rbp, rdi
     sti
     jmp rsi
 
@@ -11,11 +12,11 @@ global switchTask
 
 switchTask:
     mov rsp, rdi
-    mov rbp, rsi
+    mov rbp, rdi
 
     popall
+    add rsp, 16 
     sti
-    add rsp, 16
     iretq
 
 global spinLock

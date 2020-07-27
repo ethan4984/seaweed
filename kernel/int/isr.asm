@@ -6,11 +6,6 @@ isrHandler:
     pushall
     mov rdi, rsp 
     call isrHandlerMain
-    jmp endOfInterrupt
-
-global endOfInterrupt ; only exists for just in cause the scheduler has to schedule a task on its own core
-
-endOfInterrupt:
     popall
     add rsp, 16
     iretq
