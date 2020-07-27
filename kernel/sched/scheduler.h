@@ -12,11 +12,12 @@ extern void spinLock(uint64_t lock);
 extern void endOfInterrupt();
 
 enum {
-    WAITING_TO_START,
+    WAITING_TO_START = 1, 
     RUNNING,
     WAITING,
     START_TASK,
-    SWITCH_TASK
+    SWITCH_TASK,
+    GIVE_ME_YOUR_STACK_AND_WAIT
 };
 
 typedef struct {

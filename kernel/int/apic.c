@@ -141,6 +141,4 @@ void initAPIC() {
     }
 
     asm volatile("mov %0, %%cr8\n" "sti" :: "r"((uint64_t)0)); // set the TPR and also sti
-
-    lapicTimerInit(50);
 }

@@ -14,7 +14,7 @@ madtInfo_t madtInfo;
 idtr_t idtr;
 
 cpuInfo_t *cpuInfo;
-uint64_t cpuInfoIndex, numberOfCores = 1;
+uint64_t cpuInfoIndex = 1, numberOfCores = 1;
 
 void prepTrampoline(uint64_t stack, uint64_t pml4, uint64_t entryPoint, uint64_t idt) {
     uint64_t *arguments = (uint64_t*)(0x500 + HIGH_VMA);
@@ -28,10 +28,15 @@ void prepTrampoline(uint64_t stack, uint64_t pml4, uint64_t entryPoint, uint64_t
 void kernelMainSMP() {
     wrmsr(MSR_APIC_BASE, (1 << 11)); // lapic enable
     lapicWrite(LAPIC_SINT, lapicRead(LAPIC_SINT) | 0x1ff); // enavle spurious interrupts
+    
+    cpuInfo[cpuInfoIndex].coreID = lapicRead(LAPIC_ID_REG);
+    cpuInfo[cpuInfoIndex].currentTask = 0x420;
+
+    kprintDS("[SMP]", "Core %d fully initalized", cpuInfoIndex++);
+
+    lapicTimerInit(50);
 
     asm volatile ("sti");
-
-    cpuInfo[cpuInfoIndex++].coreID = lapicRead(LAPIC_ID_REG);
 
     for(;;);
 }
@@ -49,7 +54,6 @@ void initSMP() {
         prepTrampoline(physicalPageAlloc(4) + 0x4000 + HIGH_VMA, grabPML4(), (uint64_t)&kernelMainSMP, (uint64_t)&idtr);
         sendIPI(i, 0x500);
         sendIPI(i, 0x600 | (0x1000 / PAGESIZE));
-        kprintDS("[SMP]", "core %d initalized", i);
         ksleep(10); 
     }
 }

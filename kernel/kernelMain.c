@@ -32,7 +32,7 @@ void task1() {
 void task2() {
     static uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 100000000; i++);
+         for(int i = 0; i < 100000000; i++);
             kprintDS("[SMP]", "bruh %d", bruh);
             bruh += 1;
     }
@@ -88,7 +88,7 @@ void bootMain(bproto_t *bproto) {
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task2);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task3);
 
-    lapicTimerInit(100);
+//    lapicTimerInit(100);
 
     for(;;);
 }
