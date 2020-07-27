@@ -42,7 +42,6 @@ extern void isrHandlerMain(regs_t *stack) {
 }
 
 void idtInit() {
-    eventHandlers[69] = rescheduleCore;
     setIDTentry(40, 0, 0x8f, (uint64_t)isr0);
     setIDTentry(40, 1, 0x8f, (uint64_t)isr1);
     setIDTentry(40, 2, 0x8f, (uint64_t)isr2);
@@ -351,7 +350,7 @@ eventHandlers_t eventHandlers[] =   {
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                                        NULL, NULL, rescheduleCore, NULL, NULL, NULL, NULL, NULL,
+                                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,

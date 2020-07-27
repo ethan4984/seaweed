@@ -21,7 +21,7 @@ extern symbol bssEnd;
 extern void testDiv();
 
 void task1() {
-    static uint64_t bruh = 0;
+    uint64_t bruh = 0;
     while(1) {
         for(int i = 0; i < 100000000; i++);
         kprintDS("[SMP]", "Bruh lel %d", bruh);
@@ -30,18 +30,18 @@ void task1() {
 }
 
 void task2() {
-    static uint64_t bruh = 0;
+    uint64_t bruh = 0;
     while(1) {
-         for(int i = 0; i < 100000000; i++);
+       for(int i = 0; i < 100000000; i++);
             kprintDS("[SMP]", "bruh %d", bruh);
             bruh += 1;
     }
 }
 
 void task3() {
-    static uint64_t bruh = 0;
+    uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 100000000; i++);
+       for(int i = 0; i < 100000000; i++);
             kprintDS("[SMP]", "bruh %d", bruh);
             bruh += 2;
     }

@@ -30,11 +30,11 @@ void kernelMainSMP() {
     lapicWrite(LAPIC_SINT, lapicRead(LAPIC_SINT) | 0x1ff); // enavle spurious interrupts
     
     cpuInfo[cpuInfoIndex].coreID = lapicRead(LAPIC_ID_REG);
-    cpuInfo[cpuInfoIndex].currentTask = 0x420;
+    cpuInfo[cpuInfoIndex].currentTask = -1;
 
     kprintDS("[SMP]", "Core %d fully initalized", cpuInfoIndex++);
 
-    lapicTimerInit(50);
+    lapicTimerInit(100);
 
     asm volatile ("sti");
 
