@@ -21,6 +21,8 @@
 #define bashLightCyan \e[96m
 #define bashLightWhite \e[97m
 
+#define TABSIZE 4
+
 enum {
     DEFAULT,
     BLACK,
@@ -42,5 +44,11 @@ enum {
 };
 
 void kprintDS(const char *prefix, const char *str, ...);
+
+void initVESAtext(uint32_t fg, uint32_t bg, uint64_t x, uint64_t y);
+
+void putchar(char c);
+
+void kprintVS(const char *str, ...);
 
 #endif

@@ -1,6 +1,7 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/sched/scheduler.h>
+#include <kernel/drivers/vesa.h>
 #include <kernel/sched/hpet.h>
 #include <kernel/sched/smp.h>
 #include <kernel/acpi/rsdp.h>
@@ -56,6 +57,8 @@ void task4() {
     }
 }
 
+
+
 __attribute__((section(".init")))
 void bootMain(bproto_t *bproto) {
     memset(bssBegin, 0, bssEnd - bssBegin); // zero out .bss
@@ -82,6 +85,11 @@ void bootMain(bproto_t *bproto) {
     kHeapInit();
     initVMM();
 
+    initVESA(bproto);
+    initVESAtext(0xffffffff, 0, bproto->width, bproto->height);
+
+    kprintVS("Welcome to seaweed :)\n");
+
     rsdpInit((uint64_t*)(bproto->rsdp + HIGH_VMA));
 
     initHPET();
@@ -91,12 +99,12 @@ void bootMain(bproto_t *bproto) {
 
     initSMP();
 
-    schedulerInit();
+/*    schedulerInit();
 
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task1);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task2);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task3);
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task4);
+    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task4);*/
 
 //    lapicTimerInit(100);
 

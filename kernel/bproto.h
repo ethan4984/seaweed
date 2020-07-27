@@ -1,5 +1,7 @@
-#ifndef BBROTO_H
+#ifndef BPROTO_H
 #define BPROTO_H
+
+#include <stdint.h>
 
 typedef struct {
     uint64_t mmapAddress;

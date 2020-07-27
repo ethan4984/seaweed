@@ -33,6 +33,7 @@ void kernelMainSMP() {
     cpuInfo[cpuInfoIndex].currentTask = -1;
 
     kprintDS("[SMP]", "Core %d fully initalized", cpuInfoIndex++);
+    kprintVS("Hi from core %d\n", cpuInfoIndex - 1);
 
     lapicTimerInit(100);
 
@@ -52,8 +53,8 @@ void initSMP() {
 
     for(uint64_t i = 1; i < madtInfo.madtEntry0Count; i++) { 
         prepTrampoline(physicalPageAlloc(4) + 0x4000 + HIGH_VMA, grabPML4(), (uint64_t)&kernelMainSMP, (uint64_t)&idtr);
-        sendIPI(i, 0x500);
-        sendIPI(i, 0x600 | (0x1000 / PAGESIZE));
+        sendIPI(madtInfo.madtEntry0[i].acpiProcessorID, 0x500);
+        sendIPI(madtInfo.madtEntry0[i].acpiProcessorID, 0x600 | ((uint32_t)(uint64_t)0x1000 / PAGESIZE));
         ksleep(10); 
     }
 }

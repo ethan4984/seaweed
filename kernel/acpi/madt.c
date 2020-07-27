@@ -43,6 +43,7 @@ void madtInit() {
     }
 
     kprintDS("[ACPI]", "Parsing MADT", madtInfo.madtEntry0Count);
+    printMADT();
 }
 
 static void printMADT() {

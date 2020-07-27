@@ -31,6 +31,7 @@ void schedulerMain(regs_t *regs) {
 
     if(numberOfTasks == 0) {
         lock = 0;
+        asm volatile ("sti");
         return;
     }
 
@@ -64,7 +65,7 @@ void schedulerMain(regs_t *regs) {
             break;
 
         if(i + 1 == numberOfTasks) {
-            //kprintDS("[SMP]", "Cant find any tasks to schedule");
+            kprintDS("[SMP]", "Cant find any tasks to schedule");
             lock = 0;
             asm volatile ("sti");
             return;
@@ -94,7 +95,8 @@ void schedulerMain(regs_t *regs) {
     kprintDS("[SMP]", "switching to task index %d with stack %x on core %d", nextTaskIndex, tasks[nextTaskIndex].rsp, regs->core);
     tasks[nextTaskIndex].status = RUNNING;
     lock = 0;
-    switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rbp);
+    asm volatile ("sti");
+    switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rsp);
 }
 
 void schedulerInit() {

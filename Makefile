@@ -1,6 +1,6 @@
 CC = ~/opt/cross/bin/x86_64-elf-gcc
 CFLAGS = -Wall -Wextra -ffreestanding -fno-pic -mno-sse -mno-sse2 -mno-mmx -mno-80387 -fno-stack-protector -I. -mno-red-zone -gdwarf -mcmodel=kernel
-QEMUFLAGS = -m 1G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 -no-reboot
+QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp cpus=4 
 
 LDFLAGS = -O2 -nostdlib -no-pie -lgcc -static-libgcc
 CSOURCE = $(shell find ./ -type f -name '*.c' | sort)
@@ -13,17 +13,19 @@ build:
 	nasm -felf64 kernel/sched/scheduler.asm -o schedulerASM.o
 	$(CC) $(LDFLAGS) -T linker.ld *.o -o Bin/kernel.bin
 	nasm -fbin kernel/boot.asm -o seaweed
-	rm -f *.o Bin/kernel.bin 
+	dd if=/dev/zero bs=1M count=0 seek=64 of=seaweed.img
+	dd if=seaweed of=seaweed.img
+	rm -f *.o Bin/kernel.bin seaweed
 clean:
-	rm -f $(OBJSOURCE) kernel.bin seaweed serial.log qemu.log
+	rm -f $(OBJSOURCE) kernel.bin seaweed.img serial.log qemu.log
 
 qemu: build
 	touch serial.log
-	qemu-system-x86_64 $(QEMUFLAGS) seaweed &
+	qemu-system-x86_64 $(QEMUFLAGS) seaweed.img &
 	tail -n0 -f serial.log
 
 info: build
-	qemu-system-x86_64 $(QEMUFLAGS) seaweed -no-reboot -monitor stdio -d int -D qemu.log -no-shutdown
+	qemu-system-x86_64 seaweed.img -m 1G -no-reboot -monitor stdio -d int -D qemu.log -no-shutdown -vga vmware -enable-kvm
 
 debug: build
-	qemu-system-x86_64 $(QEMUFLAGS) seaweed -no-reboot -monitor stdio -d int -no-shutdown
+	qemu-system-x86_64 -no-reboot -monitor stdio -d int -no-shutdown -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -enable-kvm seaweed.img

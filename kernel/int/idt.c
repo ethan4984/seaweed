@@ -31,12 +31,12 @@ extern void isrHandlerMain(regs_t *stack) {
     if(stack->isrNumber < 32) {
         uint64_t cr2;
         asm volatile ("cli\n" "mov %%cr2, %0" : "=a"(cr2)); 
-        kprintDS("[KDEBUG]", "Congrates: you fucked up with a nice <%s> on core %d, have fun debugging this", exceptionMessages[stack->isrNumber], stack->core);
-        kprintDS("[KDEBUG]", "RAX: %a | RBX: %a | RCX: %a | RDX: %a", stack->rax, stack->rbx, stack->rcx, stack->rdx);
-        kprintDS("[KDEBUG]", "RSI: %a | RDI: %a | RBP: %a | RSP: %a", stack->rsi, stack->rdi, stack->rbp, stack->rsp);
-        kprintDS("[KDEBUG]", "r8:  %a | r9:  %a | r10: %a | r11: %a", stack->r8, stack->r9, stack->r10, stack->r11); 
-        kprintDS("[KDEBUG]", "r12: %a | r13: %a | r14: %a | r15: %a", stack->r12, stack->r13, stack->r14, stack->r15); 
-        kprintDS("[KDEBUG]", "cr2: %a | rip: %a", cr2, stack->rip);
+        kprintVS("Congrates: you fucked up with a nice <%s> on core %d, have fun debugging this\n", exceptionMessages[stack->isrNumber], stack->core);
+        kprintVS("RAX: %a | RBX: %a | RCX: %a | RDX: %a\n", stack->rax, stack->rbx, stack->rcx, stack->rdx);
+        kprintVS("RSI: %a | RDI: %a | RBP: %a | RSP: %a\n", stack->rsi, stack->rdi, stack->rbp, stack->rsp);
+        kprintVS("r8:  %a | r9:  %a | r10: %a | r11: %a\n", stack->r8, stack->r9, stack->r10, stack->r11); 
+        kprintVS("r12: %a | r13: %a | r14: %a | r15: %a\n", stack->r12, stack->r13, stack->r14, stack->r15); 
+        kprintVS("cr2: %a | rip: %a\n", cr2, stack->rip);
         for(;;);
     }
 }
