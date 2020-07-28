@@ -94,30 +94,28 @@ uint64_t grabPML4() {
     return pml4;
 }
 
+#define FLAGS 0x3
+
 void initVMM() {
-    pageDirectoryTables = kmalloc(sizeof(pageDirectoryEntry_t) * 100);
-    pageDirectoryCount = 100;
+    memset((void*)kpml4Addr, 0, 0x8000);
 
-    memset(pageDirectoryTables, 0, sizeof(pageDirectoryEntry_t) * 100);
-    memset((void*)kpml4Addr, 0, 0x5000); 
+    kpml4[256] = ((uint64_t)&kpml3[0]) | FLAGS; // set as global and present and r/w
+    kpml4[0] = ((uint64_t)&kpml3[0]) | FLAGS; // set as global and present and r/w
+    kpml3[0] = ((uint64_t)&kpml2_1G[0]) | FLAGS;
+    kpml3[1] = ((uint64_t)&kpml2_2G[0]) | FLAGS; 
+    kpml3[2] = ((uint64_t)&kpml2_3G[0]) | FLAGS;
+    kpml3[3] = ((uint64_t)&kpml2_4G[0]) | FLAGS; 
 
-    kpml4[256] = ((uint64_t)&kpml3[0]) | 0x3; // set as global and present and r/w
-    kpml4[0] = ((uint64_t)&kpml3[0]) |  0x3; // set as global and present and r/w
-    kpml3[0] = ((uint64_t)&kpml2_1G[0]) | 0x3;
-    kpml3[1] = ((uint64_t)&kpml2_2G[0]) | 0x3;
-    kpml3[2] = ((uint64_t)&kpml2_3G[0]) | 0x3;
-    kpml3[3] = ((uint64_t)&kpml2_4G[0]) | 0x3;
-    
-    kpml4[511] = ((uint64_t)&kpml3HH[0]) | (1 << 8) | 0x3;
-    kpml3HH[510] = ((uint64_t)&kpml2HH[0]) | (1 << 8) | 0x3;
+    kpml4[511] = ((uint64_t)&kpml3HH[0]) | FLAGS;
+    kpml3HH[510] = ((uint64_t)&kpml2HH[0]) | FLAGS;
 
     uint64_t physical = 0;
     for(int i = 0; i < 512; i++) {
-        kpml2_1G[i] = physical | (1 << 7) | 0x3; // set as global present and r/w and size
-        kpml2_2G[i] = (physical + 0x40000000) | (1 << 8) | (1 << 7) | 0x3; // set as global present and r/w and size
-        kpml2_3G[i] = (physical + (uint64_t)0x40000000 * 2) | (1 << 7) | 0x3; // set as global present and r/w and size
-        kpml2_4G[i] = (physical + (uint64_t)0x40000000 * 3) | (1 << 7) | 0x3; // set as global present and r/w and size
-        kpml2HH[i] = physical | (1 << 7) | 0x3;
+        kpml2_1G[i] = physical | (1 << 7) | FLAGS;
+        kpml2_2G[i] = (physical + 0x40000000) | (1 << 7) | FLAGS;
+        kpml2_3G[i] = (physical + (uint64_t)0x40000000 * 2) | (1 << 7) | FLAGS;
+        kpml2_4G[i] = (physical + (uint64_t)0x40000000 * 3) | (1 << 7) | FLAGS;
+        kpml2HH[i] = physical | (1 << 7) | FLAGS;
         physical += 0x200000;
     }
 

@@ -1,6 +1,6 @@
 CC = ~/opt/cross/bin/x86_64-elf-gcc
 CFLAGS = -Wall -Wextra -ffreestanding -fno-pic -mno-sse -mno-sse2 -mno-mmx -mno-80387 -fno-stack-protector -I. -mno-red-zone -gdwarf -mcmodel=kernel
-QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp cpus=4 
+QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 -enable-kvm
 
 LDFLAGS = -O2 -nostdlib -no-pie -lgcc -static-libgcc
 CSOURCE = $(shell find ./ -type f -name '*.c' | sort)
@@ -25,7 +25,7 @@ qemu: build
 	tail -n0 -f serial.log
 
 info: build
-	qemu-system-x86_64 seaweed.img -m 1G -no-reboot -monitor stdio -d int -D qemu.log -no-shutdown -vga vmware -enable-kvm
+	qemu-system-x86_64 seaweed.img $(QEMUFLAGS) -monitor stdio -d int -D qemu.log -no-shutdown
 
 debug: build
-	qemu-system-x86_64 -no-reboot -monitor stdio -d int -no-shutdown -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -enable-kvm seaweed.img
+	qemu-system-x86_64 -no-reboot -monitor stdio -d int -no-shutdown $(QEMUFLAGS) seaweed.img

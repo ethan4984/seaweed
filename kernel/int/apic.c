@@ -120,16 +120,7 @@ void initAPIC() {
 
     madtInfo = grabMadt();
 
-    wrmsr(MSR_APIC_BASE, (1 << 11)); // lapic enable
-    lapicWrite(LAPIC_SINT, lapicRead(LAPIC_SINT) | 0x1ff); // enavle spurious interrupts
-
-    kprintDS("[APIC]", "Detected cpu cores %d", madtInfo.madtEntry0Count);
-
-    if(rdmsr(MSR_APIC_BASE) & (1 << 11)) {
-        kprintDS("[APIC]", "lapic enabled"); 
-    } else {
-        kprintDS("[APIC]", "A full bruh momento just occoured, we could not make your lapic to work :("); 
-    }
+    kprintVS("Detected cpu cores %d\n", madtInfo.madtEntry0Count);
 
     for(uint64_t i = 0; i < madtInfo.madtEntry1Count; i++) {
         for(uint64_t j = madtInfo.madtEntry1[i].gsiBase; j < getMaxGSIs(madtInfo.madtEntry1[i].ioapicAddr); j++)
@@ -139,6 +130,14 @@ void initAPIC() {
     for(uint64_t i = 0; i < 16; i++) {
         writeRedirectionTable(i, i + 32);
     }
+    
+    lapicWrite(LAPIC_SINT, lapicRead(LAPIC_SINT) | 0x1ff); // enavle spurious interrupts
 
-    asm volatile("mov %0, %%cr8\n" "sti" :: "r"((uint64_t)0)); // set the TPR and also sti
+    if(rdmsr(MSR_APIC_BASE) & (1 << 11)) {
+        kprintVS("lapic enabled\n"); 
+    } else {
+        kprintVS("A full bruh momento just occoured, we could not make your lapic to work :(\n"); 
+    }
+
+    asm volatile("mov %0, %%cr8\n" :: "r"((uint64_t)0)); // set the TPR and also sti
 }

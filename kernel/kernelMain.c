@@ -88,25 +88,29 @@ void bootMain(bproto_t *bproto) {
     initVESA(bproto);
     initVESAtext(0xffffffff, 0, bproto->width, bproto->height);
 
-    kprintVS("Welcome to seaweed :)\n");
+    kprintVS("Welcome to seaweed\n");
 
     rsdpInit((uint64_t*)(bproto->rsdp + HIGH_VMA));
 
     initHPET();
     madtInit();
-    initAPIC();
     idtInit();
+    initAPIC();
+    
+    asm volatile ("sti");
 
     initSMP();
+    
+    /*
 
-/*    schedulerInit();
+    schedulerInit();
 
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task1);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task2);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task3);
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task4);*/
+    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task4);
 
-//    lapicTimerInit(100);
+    lapicTimerInit(100);*/
 
     for(;;);
 }

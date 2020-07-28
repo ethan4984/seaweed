@@ -4,15 +4,15 @@
 #define KERNEL_HIGH_VMA 0xffffffff80000000
 #define HIGH_VMA 0xffff800000000000
 
-#define kpml4Addr (0x100000 + 65536)
-#define kpml3Addr (0x100000 + 65536 + 0x1000)
-#define kpml2Addr_1G (0x100000 + 65536 + 0x2000)
-#define kpml2Addr_2G (0x100000 + 65536 + 0x3000)
-#define kpml2Addr_3G (0x100000 + 65536 + 0x4000)
-#define kpml2Addr_4G (0x100000 + 65536 + 0x5000)
+#define kpml4Addr (0x200000)
+#define kpml3Addr (0x200000 + 0x1000)
+#define kpml2Addr_1G (0x200000 + 0x2000)
+#define kpml2Addr_2G (0x200000 + 0x3000)
+#define kpml2Addr_3G (0x200000 + 0x4000)
+#define kpml2Addr_4G (0x200000 + 0x5000)
 
-#define kpml2AddrHH (0x100000 + 65536 + 0x6000)
-#define kpml3AddrHH (0x100000 + 65536 + 0x7000)
+#define kpml2AddrHH (0x200000 + 0x6000)
+#define kpml3AddrHH (0x200000 + 0x7000)
 
 #define PAGESIZE 0x1000
 

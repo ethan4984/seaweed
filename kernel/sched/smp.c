@@ -26,7 +26,6 @@ void prepTrampoline(uint64_t stack, uint64_t pml4, uint64_t entryPoint, uint64_t
 }
 
 void kernelMainSMP() {
-    wrmsr(MSR_APIC_BASE, (1 << 11)); // lapic enable
     lapicWrite(LAPIC_SINT, lapicRead(LAPIC_SINT) | 0x1ff); // enavle spurious interrupts
     
     cpuInfo[cpuInfoIndex].coreID = lapicRead(LAPIC_ID_REG);
@@ -52,10 +51,13 @@ void initSMP() {
     asm volatile ("sidt %0" :: "m"(idtr));
 
     for(uint64_t i = 1; i < madtInfo.madtEntry0Count; i++) { 
-        prepTrampoline(physicalPageAlloc(4) + 0x4000 + HIGH_VMA, grabPML4(), (uint64_t)&kernelMainSMP, (uint64_t)&idtr);
-        sendIPI(madtInfo.madtEntry0[i].acpiProcessorID, 0x500);
-        sendIPI(madtInfo.madtEntry0[i].acpiProcessorID, 0x600 | ((uint32_t)(uint64_t)0x1000 / PAGESIZE));
-        ksleep(10); 
+        uint64_t coreID = madtInfo.madtEntry0[i].apicID;
+        if(madtInfo.madtEntry0[i].flags == 1) {
+            prepTrampoline(physicalPageAlloc(4) + 0x4000 + HIGH_VMA, grabPML4(), (uint64_t)&kernelMainSMP, (uint64_t)&idtr);
+            sendIPI(coreID, 0x500); 
+            sendIPI(coreID, 0x600 | ((uint32_t)(uint64_t)0x1000 / PAGESIZE));
+            ksleep(10); 
+        }
     }
 }
 
