@@ -31,7 +31,7 @@ extern void isrHandlerMain(regs_t *stack) {
     if(stack->isrNumber < 32) {
         uint64_t cr2;
         asm volatile ("cli\n" "mov %%cr2, %0" : "=a"(cr2)); 
-        kprintVS("Congrates: you fucked up with a nice <%s> on core %d, have fun debugging this\n", exceptionMessages[stack->isrNumber], stack->core);
+        kprintVS("Congrats: you fucked up with a nice <%s> on core %d, have fun debugging this\n", exceptionMessages[stack->isrNumber], stack->core);
         kprintVS("RAX: %a | RBX: %a | RCX: %a | RDX: %a\n", stack->rax, stack->rbx, stack->rcx, stack->rdx);
         kprintVS("RSI: %a | RDI: %a | RBP: %a | RSP: %a\n", stack->rsi, stack->rdi, stack->rbp, stack->rsp);
         kprintVS("r8:  %a | r9:  %a | r10: %a | r11: %a\n", stack->r8, stack->r9, stack->r10, stack->r11); 
@@ -325,7 +325,7 @@ const char *exceptionMessages[] = { "Divide by zero",
                                     "Machine check",
                                     "SIMD floating-point exception",
                                     "Virtualization Excpetion",
-                                    "Reserved",
+                                    "Deadlock",
                                     "Reserved",
                                     "Reserved",
                                     "Reserved",

@@ -8,7 +8,7 @@
 
 extern void startTask(uint64_t rsp, uint64_t entryPoint);
 extern void switchTask(uint64_t rsp, uint64_t rbp);
-extern void spinLock(uint64_t lock);
+//extern void spinLock(uint64_t lock);
 extern void endOfInterrupt();
 
 enum {
@@ -35,5 +35,9 @@ void rescheduleCore(regs_t *regs);
 void schedulerMain(regs_t *regs);
 
 void createNewTask(uint64_t rsp, uint64_t entryPoint);
+
+void spinLock(char *ptr);
+
+void spinRelease(char *ptr);
 
 #endif

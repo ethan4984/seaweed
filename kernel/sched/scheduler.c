@@ -26,56 +26,32 @@ uint64_t numberOfTasks = 0, maxNumberOfTasks = 10;
 void schedulerMain(regs_t *regs) {
     asm volatile ("cli");
 
-    static uint64_t lock = 0;
-    spinLock((uint64_t)&lock);
+    static char lock = 0;
+    spinLock(&lock);
 
     if(numberOfTasks == 0) {
-        lock = 0;
+        spinRelease(&lock); 
         asm volatile ("sti");
         return;
     }
 
-    //kprintDS("[SMP]", "Hi from core %d", regs->core);
-    for(uint64_t i = 0; i < numberOfTasks; i++) {
-        kprintDS("[SMP]", "task %d with stack of %x and status of %d", i, tasks[i].rsp, tasks[i].status);
-    }
-
     int64_t oldTask = cpuInfo[regs->core].currentTask;
     uint64_t nextTaskIndex = 0;
-    bool flow = true;
     
     for(uint64_t i = 0; i < numberOfTasks; i++) {     
-        if(nextTaskIndex + 1 > numberOfTasks) {
-            flow = false;
-        } 
-
-        if(nextTaskIndex - 1 <= 0) {
-            flow = true;
-        }
-
-        if(flow) {
-            nextTaskIndex++;
-        } else {
-            nextTaskIndex--;
-        }
-
-        //kprintDS("[SMP]", "%d", nextTaskIndex);
-
-        if(tasks[nextTaskIndex - 1].status == WAITING || tasks[nextTaskIndex - 1].status == WAITING_TO_START)
+        if(tasks[i].status == WAITING || tasks[i].status == WAITING_TO_START) {
+            nextTaskIndex = i;
             break;
+        }
 
         if(i + 1 == numberOfTasks) {
-            kprintDS("[SMP]", "Cant find any tasks to schedule");
-            lock = 0;
+            spinRelease(&lock); 
             asm volatile ("sti");
             return;
         }
     }
 
-    nextTaskIndex--;
-
     if(tasks[oldTask].status == RUNNING) {
-        kprintDS("[SMP]", "Saving tasks state %d", oldTask);
         tasks[oldTask].rsp = (uint64_t)regs;
         tasks[oldTask].rbp = (uint64_t)regs;
         tasks[oldTask].status = WAITING;
@@ -83,18 +59,14 @@ void schedulerMain(regs_t *regs) {
 
     cpuInfo[regs->core].currentTask = nextTaskIndex;
 
-    kprintDS("[SMP]", "Next task index %d", nextTaskIndex);
-
     if(tasks[nextTaskIndex].status == WAITING_TO_START) {
         tasks[nextTaskIndex].status = RUNNING; 
-        kprintDS("[SMP]", "starting task %d with stack %x on core %d", nextTaskIndex, tasks[nextTaskIndex].rsp, regs->core);
-        lock = 0;
+        spinRelease((char*)&lock); 
         startTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].entryPoint);
     }
 
-    kprintDS("[SMP]", "switching to task index %d with stack %x on core %d", nextTaskIndex, tasks[nextTaskIndex].rsp, regs->core);
     tasks[nextTaskIndex].status = RUNNING;
-    lock = 0;
+    spinRelease(&lock); 
     asm volatile ("sti");
     switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rsp);
 }
@@ -124,4 +96,17 @@ static int64_t findFreeIndex() {
             return i;
     }
     return -1;
+}
+
+void spinLock(char *ptr) {
+    volatile uint64_t deadLockCnt = 0; 
+    while (__atomic_test_and_set(ptr, __ATOMIC_ACQUIRE)) {
+        if(++deadLockCnt == 100000000) {
+            asm volatile ("int $0x15");
+        }
+    }
+}
+
+void spinRelease(char *ptr) {
+    __atomic_clear(ptr, __ATOMIC_RELEASE);
 }

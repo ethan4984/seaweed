@@ -37,8 +37,8 @@ static bool endOfScreenV();
 static bool endOfScreenH();
 
 void kprintDS(const char *prefix, const char *str, ...) { // debug serial
-    static uint64_t lock = 0; 
-    spinLock((uint64_t)&lock);
+    static char lock = 0;
+    spinLock(&lock);
 
     uint64_t hold = 0;
     char *string;
@@ -103,8 +103,8 @@ void kprintDS(const char *prefix, const char *str, ...) { // debug serial
     }
     va_end(arg);
     serialWrite('\n'); 
-
-    lock = 0;
+    
+    spinRelease(&lock);
 }
 
 void initVESAtext(uint32_t fg, uint32_t bg, uint64_t x, uint64_t y) { 
@@ -161,8 +161,8 @@ void putchar(char c) {
 }
 
 void kprintVS(const char *str, ...) {
-    static uint64_t lock = 0; 
-    spinLock((uint64_t)&lock);
+    static char lock = 0; 
+    spinLock((char*)&lock);
 
     uint64_t hold = 0;
     char *string;
@@ -211,7 +211,7 @@ void kprintVS(const char *str, ...) {
         }
     }    
     va_end(arg);
-    lock = 0;
+    spinRelease((char*)&lock);
 }
 
 static void serialWriteString(const char *str) {
