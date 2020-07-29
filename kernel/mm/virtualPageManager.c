@@ -15,6 +15,8 @@ uint64_t *kpml2_4G = (uint64_t*)kpml2Addr_4G;
 uint64_t *kpml3HH = (uint64_t*)kpml3AddrHH;
 uint64_t *kpml2HH = (uint64_t*)kpml2AddrHH;
 
+gdtPtr_t gdtPtr;
+
 pageDirectoryEntry_t *pageDirectoryTables;
 uint64_t pageDirectoryCount = 0;
 
@@ -22,6 +24,13 @@ static uint64_t findFirstFreeSlot();
 
 uint64_t createNewAddressSpace(uint64_t size, uint64_t flags) {
     uint64_t index = findFirstFreeSlot();
+
+    /*if(kpml4[0] != 0) {
+        asm volatile ("sgdt %0" :: "m"(gdtPtr));
+        gdtPtr.addr += HIGH_VMA;
+        asm volatile ("lgdt %0" :: "m"(gdtPtr));
+        kpml4[0] = 0;
+    }*/
 
     pageDirectoryTables[index].pml4 = physicalPageAlloc(1);
     pageDirectoryTables[index].pml3 = physicalPageAlloc(1);
@@ -34,8 +43,8 @@ uint64_t createNewAddressSpace(uint64_t size, uint64_t flags) {
 
     /* inport the kernel mappings */ 
 
-    pml4Virtual[256] = ((uint64_t)kpml3) | (1 << 8) | 0x3; // set as global and present and r/w
-    pml4Virtual[511] = ((uint64_t)kpml3HH) | (1 << 8) | 0x3;
+    pml4Virtual[256] = ((uint64_t)kpml3) | 0x3; // set as global and present and r/w
+    pml4Virtual[511] = ((uint64_t)kpml3HH) | 0x3;
     
     pml4Virtual[0] = ((uint64_t)&pml3Virtual[0] - HIGH_VMA) | 0x3;
     pml3Virtual[0] = ((uint64_t)&pml2Virtual[0] - HIGH_VMA) | 0x3;

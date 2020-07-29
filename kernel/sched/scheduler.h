@@ -22,6 +22,7 @@ enum {
 
 typedef struct {
     uint8_t status;
+    uint64_t waitingTimes;
     uint64_t pml4Index;
     uint64_t rbp;
     uint64_t rsp;

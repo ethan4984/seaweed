@@ -1,3 +1,4 @@
+#include <kernel/mm/virtualPageManager.h>
 #include <kernel/drivers/font.h>
 #include <kernel/bproto.h>
 #include <lib/output.h>
@@ -16,11 +17,11 @@ void initVESA(bproto_t *bproto) {
 }
 
 void setPixel(uint16_t x, uint16_t y, uint32_t colour) {
-    *(volatile uint32_t*)((uint64_t)framebuffer + ((y * pitch) + (x * bpp / 8))) = colour; 
+    *(volatile uint32_t*)(((uint64_t)framebuffer + HIGH_VMA) + ((y * pitch) + (x * bpp / 8))) = colour; 
 }
 
 uint32_t grabColour(uint16_t x, uint16_t y) {
-    return *(volatile uint32_t*)((uint64_t)framebuffer + ((y * pitch) + (x * bpp / 8)));
+    return *(volatile uint32_t*)(((uint64_t)framebuffer + HIGH_VMA) + ((y * pitch) + (x * bpp / 8)));
 }
 
 void renderChar(uint64_t x, uint64_t y, uint32_t fg, uint32_t bg, char c) {

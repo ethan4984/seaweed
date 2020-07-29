@@ -11,6 +11,7 @@ build:
 	$(CC) $(CFLAGS) -c $(CSOURCE)
 	nasm -felf64 kernel/int/isr.asm -o isr.o
 	nasm -felf64 kernel/sched/scheduler.asm -o schedulerASM.o
+	nasm -felf64 userspace/ring3jump.asm -o ring3jump.o
 	$(CC) $(LDFLAGS) -T linker.ld *.o -o Bin/kernel.bin
 	nasm -fbin kernel/boot.asm -o seaweed
 	dd if=/dev/zero bs=1M count=0 seek=64 of=seaweed.img
@@ -25,7 +26,7 @@ qemu: build
 	tail -n0 -f serial.log
 
 info: build
-	qemu-system-x86_64 seaweed.img $(QEMUFLAGS) -monitor stdio -d int -D qemu.log -no-shutdown
+	qemu-system-x86_64 seaweed.img $(QEMUFLAGS) -monitor stdio -d int -D qemu.log -no-shutdown -no-reboot
 
 debug: build
 	qemu-system-x86_64 -no-reboot -monitor stdio -d int -no-shutdown $(QEMUFLAGS) seaweed.img

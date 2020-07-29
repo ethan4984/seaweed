@@ -16,8 +16,7 @@ isrHandler:
 global isr%1
 isr%1:
     push %1
-    mov rax, fs
-    push rax 
+    push fs 
     jmp isrHandler
 
 %endmacro

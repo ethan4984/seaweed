@@ -12,6 +12,7 @@
 
 madtInfo_t madtInfo;
 idtr_t idtr;
+gdtPtr_t gdtPtr;
 
 cpuInfo_t *cpuInfo;
 uint64_t cpuInfoIndex = 1, numberOfCores = 1;
@@ -34,6 +35,10 @@ void kernelMainSMP() {
     kprintDS("[SMP]", "Core %d fully initalized", cpuInfoIndex++);
     kprintVS("Hi from core %d\n", cpuInfoIndex - 1);
 
+    asm volatile ("sgdt %0" :: "m"(gdtPtr));
+    gdtPtr.addr += HIGH_VMA;
+    asm volatile ("lgdt %0" :: "m"(gdtPtr));
+
     lapicTimerInit(100);
 
     asm volatile ("sti");
@@ -55,7 +60,7 @@ void initSMP() {
         if(madtInfo.madtEntry0[i].flags == 1) {
             prepTrampoline(physicalPageAlloc(4) + 0x4000 + HIGH_VMA, grabPML4(), (uint64_t)&kernelMainSMP, (uint64_t)&idtr);
             sendIPI(coreID, 0x500); 
-            sendIPI(coreID, 0x600 | ((uint32_t)(uint64_t)0x1000 / PAGESIZE));
+            sendIPI(coreID, 0x600 | (uint32_t)((uint64_t)0x1000 / PAGESIZE));
             ksleep(10); 
         }
     }

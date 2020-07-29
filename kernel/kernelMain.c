@@ -26,6 +26,7 @@ void task2();
 void task3();
 void task4();
 void task5();
+void task6();
 
 __attribute__((section(".init")))
 void bootMain(bproto_t *bproto) {
@@ -75,9 +76,8 @@ void bootMain(bproto_t *bproto) {
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task2);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task3);
     createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task4);
-//    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task5);
-
-    lapicTimerInit(100);
+    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task5);
+    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task6);
 
     for(;;);
 }
@@ -127,6 +127,16 @@ void task5() {
     while(1) {
         for(int i = 0; i < 1000000; i++);
         serialWrite('5');
+        serialWrite('\n');
+        bruh += 69;
+    }
+}
+
+void task6() {
+    uint64_t bruh = 0;
+    while(1) {
+        for(int i = 0; i < 1000000; i++);
+        serialWrite('6');
         serialWrite('\n');
         bruh += 69;
     }
