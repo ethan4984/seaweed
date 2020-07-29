@@ -119,7 +119,6 @@ void initVESAtext(uint32_t fg, uint32_t bg, uint64_t x, uint64_t y) {
 
 void putchar(char c) {
     static bool isBack = false;
-    static int cnt = 0;
     switch(c) {
         case '\n':
             referenceColumn[terminalRow] = terminalColumn;

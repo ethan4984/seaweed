@@ -21,52 +21,11 @@ extern symbol bssEnd;
 
 extern void testDiv();
 
-void task1() {
-    uint64_t bruh = 0;
-    while(1) {
-        for(int i = 0; i < 1000000; i++);
-        kprintDS("[SMP]", "hi from task 1 %d", bruh);
-        bruh += 69420;
-    }
-}
-
-void task2() {
-    uint64_t bruh = 0;
-    while(1) {
-       for(int i = 0; i < 1000000; i++);
-            kprintDS("[SMP]", "hi from task 2 %d", bruh);
-            bruh += 1;
-    }
-}
-
-void task3() {
-    uint64_t bruh = 0;
-    while(1) {
-       for(int i = 0; i < 1000000; i++);
-            kprintDS("[SMP]", "gi from task 3 %d", bruh);
-            bruh += 2;
-    }
-}
-
-void task4() {
-    uint64_t bruh = 0;
-    while(1) {
-        for(int i = 0; i < 1000000; i++);
-        kprintDS("[SMP]", "hi from task 4 %d", bruh);
-        bruh += 420;
-    }
-}
-
-void task5() {
-    uint64_t bruh = 0;
-    while(1) {
-        for(int i = 0; i < 1000000; i++);
-        kprintDS("[SMP]", "hi from task 5 %d", bruh);
-        bruh += 69;
-    }
-}
-
-
+void task1();
+void task2();
+void task3();
+void task4();
+void task5();
 
 __attribute__((section(".init")))
 void bootMain(bproto_t *bproto) {
@@ -121,4 +80,49 @@ void bootMain(bproto_t *bproto) {
     lapicTimerInit(100);
 
     for(;;);
+}
+
+void task1() {
+    uint64_t bruh = 0;
+    while(1) {
+        for(int i = 0; i < 1000000; i++);
+        kprintDS("[SMP]", "hi from task 1 %d", bruh);
+        bruh += 69420;
+    }
+}
+
+void task2() {
+    uint64_t bruh = 0;
+    while(1) {
+       for(uint64_t i = 0; i < 1000000; i++);
+       kprintDS("[SMP]", "hi from task 2 %d", bruh);
+       bruh += 1;
+    }
+}
+
+void task3() {
+    uint64_t bruh = 0;
+    while(1) {
+       for(int i = 0; i < 1000000; i++);
+       kprintDS("[SMP]", "gi from task 3 %d", bruh);
+       bruh += 2;
+    }
+}
+
+void task4() {
+    uint64_t bruh = 0;
+    while(1) {
+        for(int i = 0; i < 1000000; i++);
+        kprintDS("[SMP]", "hi from task 4 %d", bruh);
+        bruh += 420;
+    }
+}
+
+void task5() {
+    uint64_t bruh = 0;
+    while(1) {
+        for(int i = 0; i < 1000000; i++);
+        kprintDS("[SMP]", "hi from task 5 %d", bruh);
+        bruh += 69;
+    }
 }

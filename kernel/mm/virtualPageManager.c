@@ -20,14 +20,6 @@ uint64_t pageDirectoryCount = 0;
 
 static uint64_t findFirstFreeSlot();
 
-/* this creates a new virtual address space
- * size = how many pages
- * flags = flags
- * the function returns a hash map index that is passed too initAddressSpace
- * initAddressSpace uses the hash index retruns by createNewAddressSpace to find
- * The page tables within pageDirectoryTables
- */
-
 uint64_t createNewAddressSpace(uint64_t size, uint64_t flags) {
     uint64_t index = findFirstFreeSlot();
 
@@ -88,42 +80,42 @@ void initAddressSpace(uint64_t index) {
     asm volatile("movq %0, %%cr3" :: "r" (pageDirectoryTables[index].pml4) : "memory");
 }
 
-uint64_t grabPML4() {
-    uint64_t pml4;
-    asm volatile ("movq %%cr3, %0" : "=r"(pml4));
-    return pml4;
-}
-
-#define FLAGS 0x3
-
 void initVMM() {
+    pageDirectoryTables = kmalloc(sizeof(pageDirectoryEntry_t) * 100);
+    pageDirectoryCount = 1000;
+
+    memset(pageDirectoryTables, 0, sizeof(pageDirectoryEntry_t) * 100);
     memset((void*)kpml4Addr, 0, 0x8000);
 
-    kpml4[256] = ((uint64_t)&kpml3[0]) | FLAGS; // set as global and present and r/w
-    kpml4[0] = ((uint64_t)&kpml3[0]) | FLAGS; // set as global and present and r/w
-    kpml3[0] = ((uint64_t)&kpml2_1G[0]) | FLAGS;
-    kpml3[1] = ((uint64_t)&kpml2_2G[0]) | FLAGS; 
-    kpml3[2] = ((uint64_t)&kpml2_3G[0]) | FLAGS;
-    kpml3[3] = ((uint64_t)&kpml2_4G[0]) | FLAGS; 
+    kpml4[256] = ((uint64_t)&kpml3[0]) | KPAGE_FLAGS; // set as global and present and r/w
+    kpml4[0] = ((uint64_t)&kpml3[0]) | KPAGE_FLAGS; // set as global and present and r/w
+    kpml3[0] = ((uint64_t)&kpml2_1G[0]) | KPAGE_FLAGS;
+    kpml3[1] = ((uint64_t)&kpml2_2G[0]) | KPAGE_FLAGS; 
+    kpml3[2] = ((uint64_t)&kpml2_3G[0]) | KPAGE_FLAGS;
+    kpml3[3] = ((uint64_t)&kpml2_4G[0]) | KPAGE_FLAGS; 
 
-    kpml4[511] = ((uint64_t)&kpml3HH[0]) | FLAGS;
-    kpml3HH[510] = ((uint64_t)&kpml2HH[0]) | FLAGS;
+    kpml4[511] = ((uint64_t)&kpml3HH[0]) | KPAGE_FLAGS;
+    kpml3HH[510] = ((uint64_t)&kpml2HH[0]) | KPAGE_FLAGS;
 
     uint64_t physical = 0;
     for(int i = 0; i < 512; i++) {
-        kpml2_1G[i] = physical | (1 << 7) | FLAGS;
-        kpml2_2G[i] = (physical + 0x40000000) | (1 << 7) | FLAGS;
-        kpml2_3G[i] = (physical + (uint64_t)0x40000000 * 2) | (1 << 7) | FLAGS;
-        kpml2_4G[i] = (physical + (uint64_t)0x40000000 * 3) | (1 << 7) | FLAGS;
-        kpml2HH[i] = physical | (1 << 7) | FLAGS;
+        kpml2_1G[i] = physical | (1 << 7) | KPAGE_FLAGS;
+        kpml2_2G[i] = (physical + 0x40000000) | (1 << 7) | KPAGE_FLAGS;
+        kpml2_3G[i] = (physical + (uint64_t)0x40000000 * 2) | (1 << 7) | KPAGE_FLAGS;
+        kpml2_4G[i] = (physical + (uint64_t)0x40000000 * 3) | (1 << 7) | KPAGE_FLAGS;
+        kpml2HH[i] = physical | (1 << 7) | KPAGE_FLAGS;
         physical += 0x200000;
     }
-
-    kprintDS("[KMM]", "Hello gamers");
 
     asm volatile("movq %0, %%cr3" :: "r" (kpml4) : "memory");
 
     kprintDS("[KMM]", "Virtual Memory Manager Initalized");
+}
+
+uint64_t grabPML4() {
+    uint64_t pml4;
+    asm volatile ("movq %%cr3, %0" : "=r"(pml4));
+    return pml4;
 }
 
 static uint64_t findFirstFreeSlot() { 

@@ -10,13 +10,7 @@
 
 #include <stddef.h>
 
-static int8_t findCore();
-static void startTaskSMP(task_t task, uint64_t core);
 static int64_t findFreeIndex();
-static void switchTaskSMP(task_t task, uint64_t core, uint64_t core1);
-static uint64_t grabCoresStack(uint64_t core);
-static uint64_t setParameters(uint8_t status, uint64_t rsp, uint64_t rbp, uint64_t entryPoint);
-static uint64_t findNextTaskToRun();
 
 cpuInfo_t *cpuInfo;
 task_t *tasks;
@@ -77,7 +71,7 @@ void schedulerInit() {
 }
 
 void createNewTask(uint64_t rsp, uint64_t entryPoint) {
-    uint64_t currentIndex = findFreeIndex();
+    int64_t currentIndex = findFreeIndex();
 
     if(currentIndex == -1) {
         tasks = krealloc(tasks, sizeof(task_t) * 10);

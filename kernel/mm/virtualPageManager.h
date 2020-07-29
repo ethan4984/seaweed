@@ -18,6 +18,8 @@
 
 #define ROUNDUP(a, b) (((a) + ((b) - 1)) / (b))
 
+#define KPAGE_FLAGS (1 << 2) | 0x3
+
 #include <stdint.h>
 
 typedef struct {
