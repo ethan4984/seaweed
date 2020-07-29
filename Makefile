@@ -1,6 +1,6 @@
 CC = ~/opt/cross/bin/x86_64-elf-gcc
 CFLAGS = -Wall -Wextra -ffreestanding -fno-pic -mno-sse -mno-sse2 -mno-mmx -mno-80387 -fno-stack-protector -I. -mno-red-zone -gdwarf -mcmodel=kernel
-QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 -enable-kvm
+QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 
 
 LDFLAGS = -O2 -nostdlib -no-pie -lgcc -static-libgcc
 CSOURCE = $(shell find ./ -type f -name '*.c' | sort)

@@ -72,13 +72,6 @@ void bootMain(bproto_t *bproto) {
 
     schedulerInit();
 
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task1);
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task2);
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task3);
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task4);
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task5);
-    createNewTask(physicalPageAlloc(1) + 0x1000 + HIGH_VMA, (uint64_t)&task6);
-
     for(;;);
 }
 

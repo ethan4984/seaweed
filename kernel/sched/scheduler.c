@@ -72,7 +72,6 @@ void schedulerMain(regs_t *regs) {
     }
 
    // kprintDS("[SMP]", "switching task on %d and coming from %d", nextTaskIndex, oldTask);
-
     tasks[nextTaskIndex].status = RUNNING;
     tasks[nextTaskIndex].waitingTimes = 0; 
     initAddressSpace(tasks[nextTaskIndex].pml4Index);
