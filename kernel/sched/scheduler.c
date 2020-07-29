@@ -33,7 +33,7 @@ void schedulerMain(regs_t *regs) {
     uint64_t nextTaskIndex = 0;
     
     for(uint64_t i = 0; i < numberOfTasks; i++) {     
-        if(tasks[i].status == WAITING || tasks[i].status == WAITING_TO_START) {
+        if((tasks[i].status == WAITING || tasks[i].status == WAITING_TO_START) && i != oldTask) {
             nextTaskIndex = i;
             break;
         }
@@ -48,6 +48,7 @@ void schedulerMain(regs_t *regs) {
     if(tasks[oldTask].status == RUNNING) {
         tasks[oldTask].rsp = (uint64_t)regs;
         tasks[oldTask].rbp = (uint64_t)regs;
+        kprintDS("[SMP]", "Making task %d WAITING", oldTask);
         tasks[oldTask].status = WAITING;
     }
 
@@ -55,14 +56,18 @@ void schedulerMain(regs_t *regs) {
 
     if(tasks[nextTaskIndex].status == WAITING_TO_START) {
         tasks[nextTaskIndex].status = RUNNING; 
+        kprintDS("[SMP]", "making task %d RUNNING comeing from %d", nextTaskIndex, oldTask);
         spinRelease((char*)&lock); 
         startTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].entryPoint);
     }
 
-    tasks[nextTaskIndex].status = RUNNING;
-    spinRelease(&lock); 
-    asm volatile ("sti");
-    switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rsp);
+    if(tasks[nextTaskIndex].status == WAITING) {
+        tasks[nextTaskIndex].status = RUNNING;
+        kprintDS("[SMP]", "making task %d RUNNING coming from %d", nextTaskIndex, oldTask);
+        spinRelease(&lock); 
+        asm volatile ("sti");
+        switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rsp);
+    }
 }
 
 void schedulerInit() {
@@ -80,7 +85,6 @@ void createNewTask(uint64_t rsp, uint64_t entryPoint) {
 
     task_t task = { WAITING_TO_START, 0, rsp, rsp,  entryPoint };
     tasks[currentIndex] = task;
-    kprintDS("[SMP]", "Increasing number of tasks to %d", numberOfTasks + 1);
     numberOfTasks++; 
 }
 
