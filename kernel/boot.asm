@@ -126,20 +126,6 @@ GDT:
     db 0b10010010 ; access
     db 0 ; granularity
     db 0 ; base high
-.USERCODE64:
-    dw 0 ; limit
-    dw 0 ; base low
-    db 0 ; base mid
-    db 0b11111101 ; access
-    db 0b10101111 ; granularity
-    db 0 ; base high
-.USERDATA64:
-    dw 0 ; limit
-    dw 0 ; base low
-    db 0 ; base mid
-    db 0b11110011 ; access
-    db 0b11001111 ; granularity
-    db 0 ; base high
 
 .end:
 

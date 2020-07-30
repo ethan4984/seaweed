@@ -6,6 +6,8 @@
 #include <kernel/mm/kHeap.h>
 #include <kernel/int/apic.h>
 #include <kernel/int/idt.h>
+#include <kernel/int/gdt.h>
+#include <kernel/int/tss.h>
 #include <lib/memUtils.h>
 #include <lib/asmUtils.h>
 #include <lib/output.h>
@@ -35,9 +37,11 @@ void kernelMainSMP() {
     kprintDS("[SMP]", "Core %d fully initalized", cpuInfoIndex++);
     kprintVS("Hi from core %d\n", cpuInfoIndex - 1);
 
-    asm volatile ("sgdt %0" :: "m"(gdtPtr));
-    gdtPtr.addr += HIGH_VMA;
-    asm volatile ("lgdt %0" :: "m"(gdtPtr));
+    uint64_t stack = physicalPageAlloc(4) + 0x4000 + KERNEL_HIGH_VMA;
+    asm volatile ("movq %0, %%rsp" : "=r"(stack));
+
+    createGenericTSS(stack);
+    createNewGDT(cpuInfoIndex - 1, grabTSS(cpuInfoIndex));
 
     lapicTimerInit(100);
 

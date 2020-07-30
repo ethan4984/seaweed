@@ -1,5 +1,6 @@
-#include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
+#include <kernel/mm/virtualPageManager.h>
+#include <kernel/sched/scheduler.h>
 #include <kernel/bproto.h>
 #include <lib/memUtils.h>
 #include <lib/output.h>
@@ -31,6 +32,9 @@ void initPMM(bproto_t *bproto) {
 }
 
 uint64_t physicalPageAlloc(uint64_t count) {
+    static char lock = 0;
+    spinLock(&lock);
+
     uint64_t cnt = 0;
     uint64_t base = firstFreePage() * PAGESIZE;
     for(uint64_t i = firstFreePage(); i < totalDetectedMemory / PAGESIZE; i++) {
@@ -44,9 +48,11 @@ uint64_t physicalPageAlloc(uint64_t count) {
             for(uint64_t j = 0; j < count; j++) {
                 set(bitmap, base / PAGESIZE + j);
             }
+            spinRelease(&lock);
             return base; 
         }
     }
+    spinRelease(&lock);
     return 0;
 }
 

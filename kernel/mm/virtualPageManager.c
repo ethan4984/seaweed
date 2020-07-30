@@ -1,6 +1,7 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/kHeap.h>
+#include <kernel/int/gdt.h>
 #include <lib/memUtils.h>
 #include <lib/output.h>
 

@@ -9,6 +9,8 @@
 #include <kernel/int/apic.h>
 #include <kernel/mm/kHeap.h>
 #include <kernel/int/idt.h>
+#include <kernel/int/gdt.h>
+#include <kernel/int/tss.h>
 #include <kernel/bproto.h>
 #include <lib/memUtils.h>
 #include <lib/output.h>
@@ -63,14 +65,20 @@ void bootMain(bproto_t *bproto) {
 
     initHPET();
     madtInit();
-    idtInit();
     initAPIC();
+
+    initGDT();
     
+    createGenericTSS(stack);
+    createNewGDT(0, grabTSS(0));
+
+    idtInit();
+
     asm volatile ("sti");
 
     initSMP();
 
-    schedulerInit();
+    //schedulerInit();
 
     for(;;);
 }
@@ -89,8 +97,8 @@ void task2() {
     uint64_t bruh = 0;
     while(1) {
        for(uint64_t i = 0; i < 1000000; i++);
-        serialWrite('2');
-        serialWrite('\n');
+       serialWrite('2');
+       serialWrite('\n');
        bruh += 1;
     }
 }

@@ -23,11 +23,6 @@
 #include <stdint.h>
 
 typedef struct {
-    uint16_t size;
-    uint64_t addr;
-} __attribute__((packed)) gdtPtr_t;
-
-typedef struct {
     uint64_t pml4;
     uint64_t pml3;
     uint64_t pml2;
