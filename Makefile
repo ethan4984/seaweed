@@ -1,6 +1,6 @@
 CC = ~/opt/cross/bin/x86_64-elf-gcc
 CFLAGS = -Wall -Wextra -ffreestanding -fno-pic -mno-sse -mno-sse2 -mno-mmx -mno-80387 -fno-stack-protector -I. -mno-red-zone -gdwarf -mcmodel=kernel
-QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 
+QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 -no-reboot -no-shutdown
 
 LDFLAGS = -O2 -nostdlib -no-pie -lgcc -static-libgcc
 CSOURCE = $(shell find ./ -type f -name '*.c' | sort)
@@ -12,6 +12,7 @@ build:
 	nasm -felf64 kernel/int/isr.asm -o isr.o
 	nasm -felf64 kernel/sched/scheduler.asm -o schedulerASM.o
 	nasm -felf64 kernel/int/gdt.asm -o gdtASM.o
+	nasm -felf64 userspace/ring3jump.asm -o ring3jump.o
 	$(CC) $(LDFLAGS) -T linker.ld *.o -o Bin/kernel.bin
 	nasm -fbin kernel/boot.asm -o seaweed
 	dd if=/dev/zero bs=1M count=0 seek=64 of=seaweed.img

@@ -163,11 +163,10 @@ mov cr4, eax
 
 mov ecx, 0xc0000080
 rdmsr
-or eax, (1 << 8) ; LME enable
+or eax, (1 << 0) | (1 << 8) ; set LME and SCE
 wrmsr
 
-mov eax, cr0
-or eax, (1 << 31) | (1 << 0)
+mov eax, 0x80000011
 mov cr0, eax
 
 jmp GDT.CODE64 - GDT.start:smpLongModeCode
@@ -270,11 +269,11 @@ mov cr4, eax
 
 mov ecx, 0xc0000080
 rdmsr
-or eax, 1 << 8 ; set LME in ELER
+or eax, (1 << 0) | (1 << 8) ; set LME in ELER
 wrmsr
 
 mov eax, cr0
-or eax, 1 << 31 | 1 << 0 ; enable protected mode and paging
+or eax, (1 << 31) | (1 << 0) ; enable protected mode and paging
 mov cr0, eax
 
 jmp GDT.CODE64 - GDT.start:longModeCode ; far jump to cs code64

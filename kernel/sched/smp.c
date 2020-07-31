@@ -55,6 +55,8 @@ void initSMP() {
 
     cpuInfo = kmalloc(sizeof(cpuInfo_t) * 32); // if you have more than 32 cores youre out of luck
 
+    cpuInfo[0].currentTask = -1;
+
     memcpy64((uint64_t*)(0x1000 + HIGH_VMA), (uint64_t*)(0x7e00 + HIGH_VMA), 0x200 / 8);
 
     asm volatile ("sidt %0" :: "m"(idtr));

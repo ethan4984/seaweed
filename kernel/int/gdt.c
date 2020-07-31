@@ -50,12 +50,12 @@ void createNewGDT(uint64_t core, uint64_t tssAddr) {
     gdt[core].gdtEntries[4].baseHigh = 0;
 
     gdt[core].tss.length = 104;
-    gdt[core].tss.baseLow = (uint16_t)tssAddr;
-    gdt[core].tss.baseMid = (uint8_t)(tssAddr >> 16);
+    gdt[core].tss.baseLow = (uint16_t)(uint64_t)tssAddr;
+    gdt[core].tss.baseMid = (uint8_t)((uint64_t)tssAddr >> 16);
     gdt[core].tss.flags1 = 0b10001001; 
     gdt[core].tss.flags2 = 0;
-    gdt[core].tss.baseHigh = (uint8_t)(tssAddr >> 24);
-    gdt[core].tss.baseHigh32 = (uint32_t)(tssAddr >> 32);
+    gdt[core].tss.baseHigh = (uint8_t)((uint64_t)tssAddr >> 24);
+    gdt[core].tss.baseHigh32 = (uint32_t)((uint64_t)tssAddr >> 32);
 
     gdt[core].gdtPtr.size = sizeof(gdt_t) - sizeof(gdtPtr_t) - 1;
     gdt[core].gdtPtr.addr = (uint64_t)&gdt[core];

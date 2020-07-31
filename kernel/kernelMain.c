@@ -2,6 +2,7 @@
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/sched/scheduler.h>
 #include <kernel/drivers/vesa.h>
+#include <kernel/int/syscall.h>
 #include <kernel/sched/hpet.h>
 #include <kernel/sched/smp.h>
 #include <kernel/acpi/rsdp.h>
@@ -23,6 +24,8 @@ extern symbol bssEnd;
 
 extern void testDiv();
 
+extern void ring3jump();
+
 void task1();
 void task2();
 void task3();
@@ -33,6 +36,8 @@ void task6();
 __attribute__((section(".init")))
 void bootMain(bproto_t *bproto) {
     memset(bssBegin, 0, bssEnd - bssBegin); // zero out .bss
+
+    kprintDS("[KDEBUG]", "%x", sizeof(regs_t));
 
     kprintDS("[KDEBUG]", "mmap address: %x", bproto->mmapAddress);
     kprintDS("[KDEBUG]", "e820 entries: %d", bproto->mmapEntries); 
@@ -76,69 +81,61 @@ void bootMain(bproto_t *bproto) {
 
     asm volatile ("sti");
 
+    lapicTimerInit(100);
+
     initSMP();
 
-    //schedulerInit();
+    schedulerInit();
+
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task1, 10);
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task2, 9);
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task3, 8);
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task4, 7);
+    /*createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task5, 6);
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task6, 5);*/
 
     for(;;);
 }
 
 void task1() {
-    uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 1000000; i++);
-        serialWrite('1');
-        serialWrite('\n');
-        bruh += 69420;
+        for(uint64_t i = 0; i < 100000000; i++);
+        asm volatile ("movq $0x69, %rax\n" "int $0x69");
     }
 }
 
 void task2() {
-    uint64_t bruh = 0;
     while(1) {
-       for(uint64_t i = 0; i < 1000000; i++);
-       serialWrite('2');
-       serialWrite('\n');
-       bruh += 1;
+        for(uint64_t i = 0; i < 100000000; i++);
+        asm volatile ("movq $0x420, %rax\n" "int $0x69");
     }
 }
 
 void task3() {
-    uint64_t bruh = 0;
     while(1) {
-       for(int i = 0; i < 1000000; i++);
-       serialWrite('3');
-        serialWrite('\n');
-       bruh += 2;
+        for(uint64_t i = 0; i < 100000000; i++);
+        asm volatile ("movq $0x69420, %rax\n" "int $0x69");
     }
 }
 
 void task4() {
-    uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 1000000; i++);
-        serialWrite('4');
-        serialWrite('\n');
-        bruh += 420;
+        for(uint64_t i = 0; i < 100000000; i++);
+        asm volatile ("movq $0x1, %rax\n" "int $0x69");
     }
+
 }
 
 void task5() {
-    uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 1000000; i++);
-        serialWrite('5');
-        serialWrite('\n');
-        bruh += 69;
+        for(uint64_t i = 0; i < 100000000; i++);
+        asm volatile ("movq $0x2, %rax\n" "int $0x69");
     }
 }
 
 void task6() {
-    uint64_t bruh = 0;
     while(1) {
-        for(int i = 0; i < 1000000; i++);
-        serialWrite('6');
-        serialWrite('\n');
-        bruh += 69;
+        for(uint64_t i = 0; i < 100000000; i++);
+        asm volatile ("movq $0x3, %rax\n" "int $0x69");
     }
 }

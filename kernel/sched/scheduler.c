@@ -1,9 +1,11 @@
+#include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/sched/scheduler.h>
 #include <kernel/sched/smp.h>
 #include <kernel/sched/hpet.h>
 #include <kernel/mm/kHeap.h>
 #include <kernel/int/apic.h>
+#include <kernel/int/tss.h>
 #include <lib/asmUtils.h>
 #include <lib/memUtils.h>
 #include <lib/output.h>
@@ -11,6 +13,7 @@
 #include <stddef.h>
 
 static int64_t findFreeIndex();
+static void setKernelStack(uint64_t currentCoreNumber, uint64_t newKernelStack);
 
 cpuInfo_t *cpuInfo;
 task_t *tasks;
@@ -18,66 +21,62 @@ task_t *tasks;
 uint64_t numberOfTasks = 0, maxNumberOfTasks = 10;
 
 void schedulerMain(regs_t *regs) {
-    asm volatile ("cli");
-
     static char lock = 0;
     spinLock(&lock);
 
-    if(numberOfTasks == 0) {
-        spinRelease(&lock); 
-        asm volatile ("sti");
-        return;
-    }
+    if(numberOfTasks == 0) 
+        goto end;
 
-    int64_t oldTask = cpuInfo[regs->core].currentTask;
-    int64_t nextTaskIndex = -1, highestWait = 0;
-
-    for(uint64_t i = 0; i < numberOfTasks; i++) {
+    int64_t nextTask = -1, lastTask = cpuInfo[regs->core].currentTask;
+    uint64_t cnt = 0;
+    
+    for(uint64_t i = 0; i < numberOfTasks; i++) { /* find the next task to run */
         if(tasks[i].status == WAITING) {
-            tasks[i].waitingTimes++;
-            if(highestWait < tasks[i].waitingTimes) {
-                highestWait = tasks[i].waitingTimes;
-                nextTaskIndex = i;
+            if(cnt < ++tasks[i].idleTime) {
+                cnt = tasks[i].idleTime;
+                nextTask = i; 
             }
         }
-    }
-    
-    for(uint64_t i = 0; i < numberOfTasks; i++) {
-        if(tasks[i].status == WAITING_TO_START && i != oldTask) {
-            nextTaskIndex = i;
+
+        if(tasks[i].status == WAITING_TO_START) {
+            nextTask = i; 
             break;
         }
     }
 
-    if(nextTaskIndex == -1) {
+    if(nextTask == -1) 
+        goto end;
+
+    if(lastTask != -1) { // potental bug
+  //      kprintDS("[KDEBUG]", "Saving the state of task %d", lastTask);
+        tasks[lastTask].kernelStack = (uint64_t)regs;
+        tasks[lastTask].status = WAITING;
+    }
+
+    cpuInfo[regs->core].currentTask = nextTask;
+
+    tasks[nextTask].idleTime = 0;
+    initAddressSpace(tasks[nextTask].pml4Index); // pml4 as whatever its supposed tp be
+    setKernelStack(regs->core, tasks[nextTask].kernelStack); 
+
+    if(tasks[nextTask].status == WAITING_TO_START) {
+ //       kprintDS("[KDEBUG]", "starting task %d on core %d and ss = %x | cs = %x | rsp = %x | entry %x", nextTask, regs->core, tasks[nextTask].ss, tasks[nextTask].cs, tasks[nextTask].rsp, tasks[nextTask].entryPoint);
+        tasks[nextTask].status = RUNNING;
         spinRelease(&lock);
-        asm volatile ("sti");
-        return;
+        startTask(tasks[nextTask].ss, tasks[nextTask].rsp, tasks[nextTask].cs, tasks[nextTask].entryPoint);
     }
 
-    if(tasks[oldTask].status == RUNNING) {
-        tasks[oldTask].rsp = (uint64_t)regs;
-        tasks[oldTask].rbp = (uint64_t)regs;
-        tasks[oldTask].status = WAITING;
-    }
+    kprintDS("[KDEBUG]", "switching task %d on core %d and ss = %x | cs = %x | rsp = %x | entry %x | rsp0 tss stack %x", nextTask, regs->core, tasks[nextTask].ss, tasks[nextTask].cs, tasks[nextTask].rsp, tasks[nextTask].entryPoint, tasks[nextTask].kernelStack);
 
-    cpuInfo[regs->core].currentTask = nextTaskIndex;
+    regs_t *bruh = (void*)tasks[nextTask].kernelStack;
+    tasks[nextTask].status = RUNNING;
 
-    if(tasks[nextTaskIndex].status == WAITING_TO_START) {
-        tasks[nextTaskIndex].status = RUNNING; 
-        tasks[nextTaskIndex].waitingTimes = 0; 
-        initAddressSpace(tasks[nextTaskIndex].pml4Index);
-        spinRelease((char*)&lock); 
-        startTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].entryPoint);
-    }
+    spinRelease(&lock);
+    switchTask(tasks[nextTask].kernelStack, tasks[nextTask].ss);
 
-   // kprintDS("[SMP]", "switching task on %d and coming from %d", nextTaskIndex, oldTask);
-    tasks[nextTaskIndex].status = RUNNING;
-    tasks[nextTaskIndex].waitingTimes = 0; 
-    initAddressSpace(tasks[nextTaskIndex].pml4Index);
-    spinRelease(&lock); 
-    asm volatile ("sti");
-    switchTask(tasks[nextTaskIndex].rsp, tasks[nextTaskIndex].rsp);
+end:
+    spinRelease(&lock);
+    return;
 }
 
 void schedulerInit() {
@@ -85,16 +84,25 @@ void schedulerInit() {
     tasks = kmalloc(sizeof(task_t) * 10);
 }
 
-void createNewTask(uint64_t rsp, uint64_t entryPoint) {
-    int64_t currentIndex = findFreeIndex();
+void createNewTask(uint16_t ss, uint64_t rsp, uint16_t cs, uint64_t entryPoint, uint64_t pageCnt) {
+    int64_t index = findFreeIndex();
 
-    if(currentIndex == -1) {
+    if(index == -1) {
         tasks = krealloc(tasks, sizeof(task_t) * 10);
         maxNumberOfTasks += 10;
     }
 
-    task_t task = { WAITING_TO_START, 0, createNewAddressSpace(10, 0x3), rsp, rsp,  entryPoint };
-    tasks[currentIndex] = task;
+    task_t newTask = {  WAITING_TO_START, // status
+                        createNewAddressSpace(pageCnt, (1 << 2) | 0x3), // pml4Index
+                        rsp,
+                        cs,
+                        ss,
+                        physicalPageAlloc(2) + 0x2000 + HIGH_VMA, // kernelStack
+                        entryPoint,
+                        0
+                     };
+
+    tasks[index] = newTask;
     numberOfTasks++; 
 }
 
@@ -104,6 +112,13 @@ static int64_t findFreeIndex() {
             return i;
     }
     return -1;
+}
+
+static void setKernelStack(uint64_t currentCoreNumber, uint64_t newKernelStack) {
+    tss_t *tss = (tss_t*)grabTSS(currentCoreNumber);
+    tss[currentCoreNumber].rsp0 = newKernelStack;
+//    kprintDS("[KDEBUG]", "tss address %x", (uint64_t)tss);
+    tss->rsp0 =  newKernelStack;
 }
 
 void spinLock(char *ptr) {

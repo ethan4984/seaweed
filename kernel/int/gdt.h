@@ -1,6 +1,8 @@
 #ifndef GDT_H
 #define GDT_H
 
+#include <kernel/int/tss.h>
+
 #include <stdint.h>
 
 typedef struct {

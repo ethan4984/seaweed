@@ -3,11 +3,13 @@
 extern isrHandlerMain
 
 isrHandler:
+    cli
     pushall
     mov rdi, rsp 
     call isrHandlerMain
     popall
-    add rsp, 16
+    add rsp, 24
+    sti
     iretq
     
 
@@ -15,8 +17,19 @@ isrHandler:
 
 global isr%1
 isr%1:
+    push 0
     push %1
     push fs 
+    jmp isrHandler
+
+%endmacro
+
+%macro errorIsr 1
+
+global errorIsr%1
+errorIsr%1:
+    push %1
+    push fs
     jmp isrHandler
 
 %endmacro
@@ -29,13 +42,13 @@ isr 4
 isr 5
 isr 6
 isr 7
-isr 8
+errorIsr 8
 isr 9
-isr 10
-isr 11
-isr 12
-isr 13
-isr 14
+errorIsr 10
+errorIsr 11
+errorIsr 12
+errorIsr 13
+errorIsr 14
 isr 15
 isr 16
 isr 17

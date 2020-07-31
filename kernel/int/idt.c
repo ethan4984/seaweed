@@ -1,4 +1,5 @@
 #include <kernel/sched/scheduler.h>
+#include <kernel/int/syscall.h>
 #include <kernel/int/apic.h>
 #include <kernel/int/idt.h>
 #include <lib/asmUtils.h>
@@ -31,17 +32,18 @@ extern void isrHandlerMain(regs_t *stack) {
     if(stack->isrNumber < 32) {
         uint64_t cr2;
         asm volatile ("cli\n" "mov %%cr2, %0" : "=a"(cr2)); 
-        kprintVS("Congrats: you fucked up with a nice <%s> on core %d, have fun debugging this\n", exceptionMessages[stack->isrNumber], stack->core);
+        kprintVS("Congrats: you fucked up with a nice <%s> on core %d and error code %x, have fun debugging this\n", exceptionMessages[stack->isrNumber], stack->core, stack->errorCode);
         kprintVS("RAX: %a | RBX: %a | RCX: %a | RDX: %a\n", stack->rax, stack->rbx, stack->rcx, stack->rdx);
         kprintVS("RSI: %a | RDI: %a | RBP: %a | RSP: %a\n", stack->rsi, stack->rdi, stack->rbp, stack->rsp);
         kprintVS("r8:  %a | r9:  %a | r10: %a | r11: %a\n", stack->r8, stack->r9, stack->r10, stack->r11); 
         kprintVS("r12: %a | r13: %a | r14: %a | r15: %a\n", stack->r12, stack->r13, stack->r14, stack->r15); 
-        kprintVS("cr2: %a | rip: %a\n", cr2, stack->rip);
+        kprintVS("cs:  %a | ss:  %a | cr2: %a | rip: %a\n", stack->cs, stack->ss, cr2, stack->rip);
         for(;;);
     }
 }
 
 void idtInit() {
+    eventHandlers[0x69] = syscallMain;
     setIDTentry(8, 0, 0x8f, (uint64_t)isr0);
     setIDTentry(8, 1, 0x8f, (uint64_t)isr1);
     setIDTentry(8, 2, 0x8f, (uint64_t)isr2);
@@ -50,13 +52,13 @@ void idtInit() {
     setIDTentry(8, 5, 0x8f, (uint64_t)isr5);
     setIDTentry(8, 6, 0x8f, (uint64_t)isr6);
     setIDTentry(8, 7, 0x8f, (uint64_t)isr7);
-    setIDTentry(8, 8, 0x8f, (uint64_t)isr8);
+    setIDTentry(8, 8, 0x8f, (uint64_t)errorIsr8);
     setIDTentry(8, 9, 0x8f, (uint64_t)isr9);
-    setIDTentry(8, 10, 0x8f, (uint64_t)isr10);
-    setIDTentry(8, 11, 0x8f, (uint64_t)isr11);
-    setIDTentry(8, 12, 0x8f, (uint64_t)isr12);
-    setIDTentry(8, 13, 0x8f, (uint64_t)isr13);
-    setIDTentry(8, 14, 0x8f, (uint64_t)isr14);
+    setIDTentry(8, 10, 0x8f, (uint64_t)errorIsr10);
+    setIDTentry(8, 11, 0x8f, (uint64_t)errorIsr11);
+    setIDTentry(8, 12, 0x8f, (uint64_t)errorIsr12);
+    setIDTentry(8, 13, 0x8f, (uint64_t)errorIsr13);
+    setIDTentry(8, 14, 0x8f, (uint64_t)errorIsr14);
     setIDTentry(8, 15, 0x8f, (uint64_t)isr15);
     setIDTentry(8, 16, 0x8f, (uint64_t)isr16);
     setIDTentry(8, 17, 0x8f, (uint64_t)isr17);
@@ -82,7 +84,7 @@ void idtInit() {
     setIDTentry(8, 37, 0x8f, (uint64_t)isr37);
     setIDTentry(8, 38, 0x8f, (uint64_t)isr38);
     setIDTentry(8, 39, 0x8f, (uint64_t)isr39);
-    setIDTentry(8, 40, 0x8f, (uint64_t)isr8);
+    setIDTentry(8, 40, 0x8f, (uint64_t)isr40);
     setIDTentry(8, 41, 0x8f, (uint64_t)isr41);
     setIDTentry(8, 42, 0x8f, (uint64_t)isr42);
     setIDTentry(8, 43, 0x8f, (uint64_t)isr43);
@@ -147,7 +149,7 @@ void idtInit() {
     setIDTentry(8, 102, 0x8f, (uint64_t)isr102);
     setIDTentry(8, 103, 0x8f, (uint64_t)isr103);
     setIDTentry(8, 104, 0x8f, (uint64_t)isr104);
-    setIDTentry(8, 105, 0x8f, (uint64_t)isr105);
+    setIDTentry(8, 105, 0xef, (uint64_t)isr105);
     setIDTentry(8, 106, 0x8f, (uint64_t)isr106);
     setIDTentry(8, 107, 0x8f, (uint64_t)isr107);
     setIDTentry(8, 108, 0x8f, (uint64_t)isr108);
@@ -182,7 +184,7 @@ void idtInit() {
     setIDTentry(8, 137, 0x8f, (uint64_t)isr137);
     setIDTentry(8, 138, 0x8f, (uint64_t)isr138);
     setIDTentry(8, 139, 0x8f, (uint64_t)isr139);
-    setIDTentry(8, 18, 0x8f, (uint64_t)isr18);
+    setIDTentry(8, 140, 0x8f, (uint64_t)isr140);
     setIDTentry(8, 141, 0x8f, (uint64_t)isr141);
     setIDTentry(8, 142, 0x8f, (uint64_t)isr142);
     setIDTentry(8, 143, 0x8f, (uint64_t)isr143);
