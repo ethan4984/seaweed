@@ -3,6 +3,16 @@
 
 #include <libk/asmUtils.h>
 
+enum {
+    OUTPUT,
+    INPUT
+};
+
+enum {
+    SERIAL,
+    VIDEO
+};
+
 void syscallMain(regs_t *regs);
 
 #endif

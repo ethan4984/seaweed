@@ -6,8 +6,23 @@
 void syscallMain(regs_t *regs) {
     static char lock = 0;
     spinLock(&lock);
-    
-    kprintDS("[KDEBUG]", "Hi syscall, nice rax btw %x", regs->rax);
+
+//    kprintDS("[KDEBUG]", "Here lel");
+
+    switch(regs->rax) { // rax = type
+        case OUTPUT:
+            switch(regs->rcx) {
+                case SERIAL:
+ //                   kprintDS("[KDEBUG]", "Trying to print %d", (char)regs->rdx);
+                    serialWrite((char)regs->rdx);
+                    break;
+                case VIDEO:
+                    break;
+            }
+            break;
+        case INPUT:
+            break;
+    }
 
     spinRelease(&lock);
 }

@@ -1,3 +1,4 @@
+#include <kernel/sched/scheduler.h>
 #include <libk/asmUtils.h>
 
 void outb(uint16_t port, uint8_t data) {

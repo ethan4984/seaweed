@@ -15,6 +15,7 @@
 #include <kernel/bproto.h>
 #include <libk/memUtils.h>
 #include <libk/output.h>
+#include <libu/logs.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -98,14 +99,14 @@ void bootMain(bproto_t *bproto) {
 void task1() {
     while(1) {
         for(uint64_t i = 0; i < 100000000; i++);
-        asm volatile ("movq $0x69, %rax\n" "int $0x69");
+//        asm volatile ("movq $0x69, %rax\n" "int $0x69");
     }
 }
 
 void task2() {
     while(1) {
-        for(uint64_t i = 0; i < 100000000; i++);
-        asm volatile ("movq $0x420, %rax\n" "int $0x69");
+        for(uint64_t i = 0; i < 10000000; i++);
+        printf("hi from userspace");
     }
 }
 
