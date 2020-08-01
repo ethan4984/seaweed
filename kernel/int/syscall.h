@@ -5,12 +5,17 @@
 
 enum {
     OUTPUT,
-    INPUT
+    INPUT,
+    CALLS
 };
 
 enum {
     SERIAL,
     VIDEO
+};
+
+enum {
+    PTHREAD
 };
 
 void syscallMain(regs_t *regs);

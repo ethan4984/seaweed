@@ -7,13 +7,10 @@ void syscallMain(regs_t *regs) {
     static char lock = 0;
     spinLock(&lock);
 
-//    kprintDS("[KDEBUG]", "Here lel");
-
     switch(regs->rax) { // rax = type
         case OUTPUT:
             switch(regs->rcx) {
                 case SERIAL:
- //                   kprintDS("[KDEBUG]", "Trying to print %d", (char)regs->rdx);
                     serialWrite((char)regs->rdx);
                     break;
                 case VIDEO:
@@ -22,6 +19,12 @@ void syscallMain(regs_t *regs) {
             break;
         case INPUT:
             break;
+        case CALLS:
+            switch(regs->rcx) {
+                case PTHREAD:
+                    createThread(regs->rdx, regs->rbx); 
+                    break;
+            }            
     }
 
     spinRelease(&lock);

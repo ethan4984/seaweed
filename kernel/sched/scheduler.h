@@ -14,18 +14,26 @@ enum {
     WAITING_TO_START = 1, 
     RUNNING,
     WAITING,
-    START_TASK,
-    SWITCH_TASK,
-    GIVE_ME_YOUR_STACK_AND_WAIT
 };
+
+typedef struct {
+    uint8_t status;
+    regs_t regs;
+    uint64_t kernelStack;
+    uint64_t entryPoint;
+    uint64_t idleTime;
+} thread_t;
 
 typedef struct {
     uint8_t status;
     uint64_t pml4Index;
     regs_t regs;
+    thread_t *threads;
     uint64_t kernelStack;
     uint64_t entryPoint;
     uint64_t idleTime;
+    uint64_t numberOfThreads;
+    uint64_t maxNumberOfThreads;
 } task_t;
 
 void schedulerInit();
@@ -35,6 +43,8 @@ void rescheduleCore(regs_t *regs);
 void schedulerMain(regs_t *regs);
 
 void createNewTask(uint16_t ss, uint64_t rsp, uint16_t cs, uint64_t entryPoint, uint64_t size);
+
+void createThread(uint64_t taskIndex, uint64_t entryPoint);
 
 void spinLock(char *ptr);
 

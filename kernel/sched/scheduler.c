@@ -97,13 +97,50 @@ void createNewTask(uint16_t ss, uint64_t rsp, uint16_t cs, uint64_t entryPoint, 
     task_t newTask = {  WAITING_TO_START, // status
                         createNewAddressSpace(pageCnt, (1 << 2) | 0x3), // pml4Index
                         regs,
+                        kmalloc(sizeof(thread_t) * 10),
                         physicalPageAlloc(2) + 0x2000 + HIGH_VMA, // kernelStack
                         entryPoint,
-                        0
+                        0,
+                        0,
+                        10
                      };
 
     tasks[index] = newTask;
     numberOfTasks++; 
+}
+
+void createThread(uint64_t taskIndex, uint64_t entryPoint) {
+    if(tasks >= numberOfTasks) {
+        kprintDS("[KDEBUG]", "bruh pass a vaild index would you");  
+        return;
+    }
+
+    if(++tasks[taskIndex].numberOfThreads % 10 == 0) {
+        tasks[taskIndex].threads = krealloc(tasks[taskIndex].threads, tasks[taskIndex].numberOfThreads + 10);
+    }
+
+    uint64_t threadIndex = 0;
+    for(uint64_t i = 0; i < tasks[taskIndex].maxNumberOfThreads; i++) {
+        if(tasks[taskIndex].threads[i].entryPoint != 0) {
+            threadIndex = i;
+            break;
+        }
+    }
+
+    regs_t regs;
+
+    regs.rsp = physicalPageAlloc(2) + 0x2000;
+    regs.ss = tasks[taskIndex].regs.ss;
+    regs.cs = tasks[taskIndex].regs.cs;
+
+    thread_t thread = { WAITING_TO_START,
+                        regs,
+                        physicalPageAlloc(2) + 0x2000 + HIGH_VMA,
+                        entryPoint,
+                        0
+                      };
+
+    tasks[taskIndex].threads[threadIndex] = thread;
 }
 
 static int64_t findFreeIndex() {
@@ -117,7 +154,6 @@ static int64_t findFreeIndex() {
 static void setKernelStack(uint64_t currentCoreNumber, uint64_t newKernelStack) {
     tss_t *tss = (tss_t*)grabTSS(currentCoreNumber);
     tss[currentCoreNumber].rsp0 = newKernelStack;
-  //  kprintDS("[KDEBUG]", "tss address %x", (uint64_t)tss);
     tss->rsp0 =  newKernelStack;
 }
 
