@@ -6,9 +6,9 @@
 #include <kernel/mm/kHeap.h>
 #include <kernel/int/apic.h>
 #include <kernel/int/tss.h>
-#include <lib/asmUtils.h>
-#include <lib/memUtils.h>
-#include <lib/output.h>
+#include <libk/asmUtils.h>
+#include <libk/memUtils.h>
+#include <libk/output.h>
 
 #include <stddef.h>
 
@@ -48,7 +48,6 @@ void schedulerMain(regs_t *regs) {
         goto end;
 
     if(lastTask != -1) { // potental bug
-//        kprintDS("[KDEBUG]", "Saving the state of task %d with stack of %x", lastTask, (uint64_t)regs);
         tasks[lastTask].regs = *regs;
         tasks[lastTask].status = WAITING;
     }
@@ -66,7 +65,6 @@ void schedulerMain(regs_t *regs) {
     }
 
     if(tasks[nextTask].status == WAITING) {
-        regs_t *bruh = (void*)tasks[nextTask].kernelStack;
         tasks[nextTask].status = RUNNING;
         spinRelease(&lock);
         switchTask((uint64_t)&tasks[nextTask].regs, tasks[nextTask].regs.ss);

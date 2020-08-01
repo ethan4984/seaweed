@@ -1,7 +1,7 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/acpi/rsdp.h>
-#include <lib/string.h>
-#include <lib/output.h>
+#include <libk/string.h>
+#include <libk/output.h>
 
 #include <stddef.h>
 

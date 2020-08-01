@@ -1,4 +1,4 @@
-#include <lib/string.h>
+#include <libk/string.h>
 
 char *itob(uint64_t num, int base)
 {

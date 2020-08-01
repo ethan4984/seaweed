@@ -1,7 +1,7 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/drivers/font.h>
 #include <kernel/bproto.h>
-#include <lib/output.h>
+#include <libk/output.h>
 
 #include <stdint.h>
     

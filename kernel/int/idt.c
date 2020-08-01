@@ -2,8 +2,8 @@
 #include <kernel/int/syscall.h>
 #include <kernel/int/apic.h>
 #include <kernel/int/idt.h>
-#include <lib/asmUtils.h>
-#include <lib/output.h>
+#include <libk/asmUtils.h>
+#include <libk/output.h>
 
 #include <stddef.h>
 

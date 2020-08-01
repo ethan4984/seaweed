@@ -8,9 +8,9 @@
 #include <kernel/int/idt.h>
 #include <kernel/int/gdt.h>
 #include <kernel/int/tss.h>
-#include <lib/memUtils.h>
-#include <lib/asmUtils.h>
-#include <lib/output.h>
+#include <libk/memUtils.h>
+#include <libk/asmUtils.h>
+#include <libk/output.h>
 
 madtInfo_t madtInfo;
 idtr_t idtr;

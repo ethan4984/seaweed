@@ -4,9 +4,9 @@
 #include <kernel/acpi/madt.h>
 #include <kernel/mm/kHeap.h>
 #include <kernel/int/apic.h> 
-#include <lib/asmUtils.h>
-#include <lib/memUtils.h>
-#include <lib/output.h>
+#include <libk/asmUtils.h>
+#include <libk/memUtils.h>
+#include <libk/output.h>
 
 madtInfo_t madtInfo;
 

@@ -1,8 +1,8 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/acpi/madt.h>
 #include <kernel/mm/kHeap.h>
-#include <lib/asmUtils.h>
-#include <lib/output.h>
+#include <libk/asmUtils.h>
+#include <libk/output.h>
 
 madtInfo_t madtInfo = { 0 };
 

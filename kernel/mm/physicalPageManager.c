@@ -2,8 +2,8 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/sched/scheduler.h>
 #include <kernel/bproto.h>
-#include <lib/memUtils.h>
-#include <lib/output.h>
+#include <libk/memUtils.h>
+#include <libk/output.h>
 
 #include <stddef.h>
 

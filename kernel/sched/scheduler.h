@@ -1,7 +1,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include <lib/asmUtils.h>
+#include <libk/asmUtils.h>
 
 #include <stdbool.h>
 #include <stdint.h>

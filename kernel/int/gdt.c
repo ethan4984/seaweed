@@ -1,8 +1,8 @@
 #include <kernel/mm/kHeap.h>
 #include <kernel/int/tss.h>
 #include <kernel/int/gdt.h>
-#include <lib/memUtils.h>
-#include <lib/output.h>
+#include <libk/memUtils.h>
+#include <libk/output.h>
 
 gdt_t *gdt;
 

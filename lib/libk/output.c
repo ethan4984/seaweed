@@ -1,9 +1,9 @@
 #include <kernel/sched/scheduler.h>
 #include <kernel/drivers/vesa.h>
 #include <kernel/mm/kHeap.h>
-#include <lib/asmUtils.h>
-#include <lib/output.h>
-#include <lib/string.h>
+#include <libk/asmUtils.h>
+#include <libk/output.h>
+#include <libk/string.h>
 
 #include <stdarg.h>
 #include <stdbool.h>

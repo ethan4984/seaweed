@@ -1,7 +1,7 @@
 #include <kernel/sched/scheduler.h>
 #include <kernel/int/syscall.h>
-#include <lib/asmUtils.h>
-#include <lib/output.h>
+#include <libk/asmUtils.h>
+#include <libk/output.h>
 
 void syscallMain(regs_t *regs) {
     static char lock = 0;

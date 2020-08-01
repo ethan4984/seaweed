@@ -13,8 +13,8 @@
 #include <kernel/int/gdt.h>
 #include <kernel/int/tss.h>
 #include <kernel/bproto.h>
-#include <lib/memUtils.h>
-#include <lib/output.h>
+#include <libk/memUtils.h>
+#include <libk/output.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -23,8 +23,6 @@ extern symbol bssBegin;
 extern symbol bssEnd;
 
 extern void testDiv();
-
-extern void ring3jump();
 
 void task1();
 void task2();
@@ -87,12 +85,12 @@ void bootMain(bproto_t *bproto) {
 
     schedulerInit();
 
-    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task1, 10);
+    createNewTask(0x10, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x8, (uint64_t)&task1, 10);
     createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task2, 9);
     createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task3, 8);
     createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task4, 7);
     createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task5, 6);
-    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task6, 5);//
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task6, 5);
 
     for(;;);
 }

@@ -1,7 +1,7 @@
 #ifndef IDT_H
 #define IDT_H
 
-#include <lib/asmUtils.h>
+#include <libk/asmUtils.h>
 
 #include <stdint.h>
 
