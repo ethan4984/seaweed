@@ -91,8 +91,8 @@ void bootMain(bproto_t *bproto) {
     createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task2, 9);
     createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task3, 8);
     createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task4, 7);
-    /*createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task5, 6);
-    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task6, 5);*/
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task5, 6);
+    createNewTask(0x23, physicalPageAlloc(1) + HIGH_VMA + 0x1000, 0x1b, (uint64_t)&task6, 5);//
 
     for(;;);
 }

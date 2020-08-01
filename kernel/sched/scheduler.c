@@ -48,8 +48,8 @@ void schedulerMain(regs_t *regs) {
         goto end;
 
     if(lastTask != -1) { // potental bug
-  //      kprintDS("[KDEBUG]", "Saving the state of task %d", lastTask);
-        tasks[lastTask].kernelStack = (uint64_t)regs;
+//        kprintDS("[KDEBUG]", "Saving the state of task %d with stack of %x", lastTask, (uint64_t)regs);
+        tasks[lastTask].regs = *regs;
         tasks[lastTask].status = WAITING;
     }
 
@@ -60,19 +60,17 @@ void schedulerMain(regs_t *regs) {
     setKernelStack(regs->core, tasks[nextTask].kernelStack); 
 
     if(tasks[nextTask].status == WAITING_TO_START) {
- //       kprintDS("[KDEBUG]", "starting task %d on core %d and ss = %x | cs = %x | rsp = %x | entry %x", nextTask, regs->core, tasks[nextTask].ss, tasks[nextTask].cs, tasks[nextTask].rsp, tasks[nextTask].entryPoint);
         tasks[nextTask].status = RUNNING;
         spinRelease(&lock);
-        startTask(tasks[nextTask].ss, tasks[nextTask].rsp, tasks[nextTask].cs, tasks[nextTask].entryPoint);
+        startTask(tasks[nextTask].regs.ss, tasks[nextTask].regs.rsp, tasks[nextTask].regs.cs, tasks[nextTask].entryPoint);
     }
 
-    kprintDS("[KDEBUG]", "switching task %d on core %d and ss = %x | cs = %x | rsp = %x | entry %x | rsp0 tss stack %x", nextTask, regs->core, tasks[nextTask].ss, tasks[nextTask].cs, tasks[nextTask].rsp, tasks[nextTask].entryPoint, tasks[nextTask].kernelStack);
-
-    regs_t *bruh = (void*)tasks[nextTask].kernelStack;
-    tasks[nextTask].status = RUNNING;
-
-    spinRelease(&lock);
-    switchTask(tasks[nextTask].kernelStack, tasks[nextTask].ss);
+    if(tasks[nextTask].status == WAITING) {
+        regs_t *bruh = (void*)tasks[nextTask].kernelStack;
+        tasks[nextTask].status = RUNNING;
+        spinRelease(&lock);
+        switchTask((uint64_t)&tasks[nextTask].regs, tasks[nextTask].regs.ss);
+    }
 
 end:
     spinRelease(&lock);
@@ -92,11 +90,15 @@ void createNewTask(uint16_t ss, uint64_t rsp, uint16_t cs, uint64_t entryPoint, 
         maxNumberOfTasks += 10;
     }
 
+    regs_t regs;
+
+    regs.rsp = rsp;
+    regs.ss = ss;
+    regs.cs = cs;
+
     task_t newTask = {  WAITING_TO_START, // status
                         createNewAddressSpace(pageCnt, (1 << 2) | 0x3), // pml4Index
-                        rsp,
-                        cs,
-                        ss,
+                        regs,
                         physicalPageAlloc(2) + 0x2000 + HIGH_VMA, // kernelStack
                         entryPoint,
                         0
@@ -108,7 +110,7 @@ void createNewTask(uint16_t ss, uint64_t rsp, uint16_t cs, uint64_t entryPoint, 
 
 static int64_t findFreeIndex() {
     for(uint64_t i = 0; i < maxNumberOfTasks; i++) {
-        if(tasks[i].rsp == 0) 
+        if(tasks[i].kernelStack == 0) 
             return i;
     }
     return -1;
@@ -117,7 +119,7 @@ static int64_t findFreeIndex() {
 static void setKernelStack(uint64_t currentCoreNumber, uint64_t newKernelStack) {
     tss_t *tss = (tss_t*)grabTSS(currentCoreNumber);
     tss[currentCoreNumber].rsp0 = newKernelStack;
-//    kprintDS("[KDEBUG]", "tss address %x", (uint64_t)tss);
+  //  kprintDS("[KDEBUG]", "tss address %x", (uint64_t)tss);
     tss->rsp0 =  newKernelStack;
 }
 

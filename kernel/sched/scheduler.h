@@ -22,9 +22,7 @@ enum {
 typedef struct {
     uint8_t status;
     uint64_t pml4Index;
-    uint64_t rsp;
-    uint16_t cs;
-    uint16_t ss;
+    regs_t regs;
     uint64_t kernelStack;
     uint64_t entryPoint;
     uint64_t idleTime;
