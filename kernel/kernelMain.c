@@ -1,6 +1,7 @@
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/sched/scheduler.h>
+#include <kernel/drivers/ahci.h>
 #include <kernel/drivers/vesa.h>
 #include <kernel/drivers/pci.h>
 #include <kernel/int/syscall.h>
@@ -71,9 +72,9 @@ void bootMain(bproto_t *bproto) {
     initHPET();
     madtInit();
     initAPIC();
-
     initGDT();
     initPCI();
+    initAHCI();
     
     createGenericTSS(stack);
     createNewGDT(0, grabTSS(0));

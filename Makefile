@@ -1,6 +1,6 @@
 CC = ~/opt/cross/bin/x86_64-elf-gcc
 CFLAGS = -Wall -Wextra -ffreestanding -fno-pic -mno-sse -mno-sse2 -mno-mmx -mno-80387 -fno-stack-protector -I. -Ilib -mno-red-zone -gdwarf -mcmodel=kernel
-QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 -enable-kvm
+QEMUFLAGS = -m 4G -vga vmware -serial file:serial.log -soundhw pcspk -smp 4 -enable-kvm 
 
 LDFLAGS = -O2 -nostdlib -no-pie -lgcc -static-libgcc
 CSOURCE = $(shell find ./ -type f -name '*.c' | sort)
@@ -14,16 +14,14 @@ build:
 	nasm -felf64 kernel/int/gdt.asm -o gdtASM.o
 	nasm -felf64 lib/libu/syscalls.asm -o syscalls.o
 	$(CC) $(LDFLAGS) -T linker.ld *.o -o Bin/kernel.bin
-	nasm -fbin kernel/boot.asm -o seaweed
-	dd if=/dev/zero bs=1M count=0 seek=64 of=seaweed.img
-	dd if=seaweed of=seaweed.img
-	rm -f *.o Bin/kernel.bin seaweed
+	nasm -fbin kernel/boot.asm -o seaweed.img
+	rm -f *.o Bin/kernel.bin
 clean:
 	rm -f $(OBJSOURCE) kernel.bin seaweed.img serial.log qemu.log
 
 qemu: build
 	touch serial.log
-	qemu-system-x86_64 $(QEMUFLAGS) seaweed.img &
+	qemu-system-x86_64 $(QEMUFLAGS) -hda seaweed.img -M q35 &
 	tail -n0 -f serial.log
 
 info: build

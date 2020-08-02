@@ -14,6 +14,16 @@ typedef struct {
     uint8_t function;
 } pci_t;
 
+typedef struct {
+    pci_t *pciDevices;
+    uint64_t totalDevices;
+} pciInfo_t;
+
+typedef struct {
+    uint64_t base;
+    uint64_t size;
+} pciBar_t;
+
 uint32_t pciRead(uint8_t bus, uint8_t device, uint8_t func, uint8_t reg);
 
 void pciWrite(uint32_t data, uint8_t bus, uint8_t device, uint8_t func, uint8_t reg);
@@ -21,6 +31,8 @@ void pciWrite(uint32_t data, uint8_t bus, uint8_t device, uint8_t func, uint8_t 
 void pciScanBus(uint8_t bus);
 
 void checkDevice(uint8_t bus, uint8_t device, uint8_t function);
+
+pciInfo_t grabPCIDevices();
 
 void initPCI();
 

@@ -7,7 +7,7 @@
 
 static void addPCIDevice(pci_t newDevice);
 
-pci_t *pciDevices;
+static pci_t *pciDevices;
 uint64_t totalDevices = 0;
 
 uint32_t pciRead(uint8_t bus, uint8_t device, uint8_t func, uint8_t reg) {
@@ -58,6 +58,12 @@ void pciScanBus(uint8_t bus) {
     }
 }
 
+pciBar_t getPCIbar(pci_t pciDevice, uint8_t bar) {
+    if((pciRead(pciDevice.bus, pciDevice.device, pciDevice.function, 16 * bar * 4) >> 1) & 0x3 == 1) {
+        
+    }
+}
+
 void showDevices() {
     for(uint64_t device = 0; device < totalDevices; device++) {
         kprintDS("[PCI]", "device %d: ", device);
@@ -74,8 +80,6 @@ void initPCI() {
     showDevices();
 }
 
-
-
 static void addPCIDevice(pci_t newDevice) {
     static uint64_t maxSize = 10;
 
@@ -85,4 +89,9 @@ static void addPCIDevice(pci_t newDevice) {
     }
 
     pciDevices[totalDevices++] = newDevice;
-} 
+}
+
+pciInfo_t grabPCIDevices() {
+    pciInfo_t pciInfo = { pciDevices, totalDevices };
+    return pciInfo;
+}

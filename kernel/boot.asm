@@ -381,4 +381,4 @@ times 32768-($-$$) db 0 ; mbrs limit
 
 incbin 'Bin/kernel.bin'
 
-times 131072-($-$$) db 0
+times 0x800000-($-$$) db 0
