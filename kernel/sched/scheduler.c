@@ -55,7 +55,7 @@ void schedulerMain(regs_t *regs) {
     cpuInfo[regs->core].currentTask = nextTask;
 
     tasks[nextTask].idleTime = 0;
-    initAddressSpace(tasks[nextTask].pml4Index); // pml4 as whatever its supposed tp be
+    initAddressSpace(tasks[nextTask].pml4Index); // set pml4 as whatever its supposed tp be
     setKernelStack(regs->core, tasks[nextTask].kernelStack); 
 
     if(tasks[nextTask].status == WAITING_TO_START) {
