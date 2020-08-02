@@ -1,7 +1,6 @@
 #include <libk/string.h>
 
-char *itob(uint64_t num, int base)
-{
+char *itob(uint64_t num, int base) {
     static char hold[] = "0123456789ABCDEF";
     static char buffer[50];
     char *str;
@@ -17,8 +16,7 @@ char *itob(uint64_t num, int base)
     return str;
 }
 
-uint64_t strlen(const char *str)
-{
+uint64_t strlen(const char *str) {
     uint64_t len = 0;
     while (str[len])
         len++;
@@ -26,8 +24,7 @@ uint64_t strlen(const char *str)
 }
 
 
-int strcmp(const char *a, const char *b)
-{
+int strcmp(const char *a, const char *b) {
     while(*a && *a == *b) {
         a++;
         b++;
@@ -43,8 +40,7 @@ int strncmp(const char* str1, const char* str2, uint64_t n) {
     return 0;
 }
 
-char *strcpy(char *dest, const char *src)
-{
+char *strcpy(char *dest, const char *src) {
     if(dest == NULL)
         return NULL;
 
