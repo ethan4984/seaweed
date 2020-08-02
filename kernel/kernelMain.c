@@ -2,6 +2,7 @@
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/sched/scheduler.h>
 #include <kernel/drivers/vesa.h>
+#include <kernel/drivers/pci.h>
 #include <kernel/int/syscall.h>
 #include <kernel/sched/hpet.h>
 #include <kernel/sched/smp.h>
@@ -72,6 +73,7 @@ void bootMain(bproto_t *bproto) {
     initAPIC();
 
     initGDT();
+    initPCI();
     
     createGenericTSS(stack);
     createNewGDT(0, grabTSS(0));
