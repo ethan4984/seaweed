@@ -108,7 +108,7 @@ void task1() {
 
 void task2() {
     while(1) {
-        for(uint64_t i = 0; i < 10000000; i++);
+        for(uint64_t i = 0; i < 100000000; i++);
         printf("hi from userspace");
     }
 }

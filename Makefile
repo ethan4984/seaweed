@@ -21,7 +21,7 @@ clean:
 
 qemu: build
 	touch serial.log
-	qemu-system-x86_64 $(QEMUFLAGS) -hda seaweed.img -M q35 &
+	qemu-system-x86_64 $(QEMUFLAGS)  -drive id=disk,file=seaweed.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -M q35 &
 	tail -n0 -f serial.log
 
 info: build
