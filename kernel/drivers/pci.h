@@ -20,8 +20,8 @@ typedef struct {
 } pciInfo_t;
 
 typedef struct {
-    uint64_t base;
-    uint64_t size;
+    uint32_t base;
+    uint32_t size;
 } pciBar_t;
 
 uint32_t pciRead(uint8_t bus, uint8_t device, uint8_t func, uint8_t reg);
@@ -33,6 +33,8 @@ void pciScanBus(uint8_t bus);
 void checkDevice(uint8_t bus, uint8_t device, uint8_t function);
 
 pciInfo_t grabPCIDevices();
+
+pciBar_t getBAR(pci_t device, uint64_t barNum);
 
 void initPCI();
 

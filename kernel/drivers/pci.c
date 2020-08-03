@@ -58,10 +58,15 @@ void pciScanBus(uint8_t bus) {
     }
 }
 
-pciBar_t getPCIbar(pci_t pciDevice, uint8_t bar) {
-    if((pciRead(pciDevice.bus, pciDevice.device, pciDevice.function, 16 * bar * 4) >> 1) & 0x3 == 1) {
-        
-    }
+pciBar_t getBAR(pci_t device, uint64_t barNum) {
+    uint32_t base = pciRead(device.bus, device.device, device.function, 0x10 + (barNum * 4));
+
+    pciWrite(0xffffffff, device.bus, device.device, device.function, 0x10 + (barNum * 4));
+    uint32_t size = pciRead(device.bus, device.device, device.function, 0x10 + (barNum * 4)) & ~(0xf);
+    pciWrite(device.bus, device.device, device.function, 0x10 + (barNum * 4), base);
+
+    return (pciBar_t) { base, ~(size) + 1 };
+                        
 }
 
 void showDevices() {
