@@ -18,23 +18,24 @@ static int64_t firstFreeSlot();
 static int64_t firstFreeAllocationSlot();
 
 void kHeapInit() {
-    kHeapBegin = physicalPageAlloc(8); // allocate a 32kb heap
+    kHeapBegin = physicalPageAlloc(0x100); // allocate a 1mb heap
 
     kbitmap = (void*)physicalPageAlloc(1) + HIGH_VMA; // reserve 4kb for the bitmap (complete overkill)
-    kbitmapSize = (0x8000 / BLOCKSIZE); 
+    kbitmapSize = (0x100000 / BLOCKSIZE); 
 
-    allocationBitmap = (void*)physicalPageAlloc(4) + HIGH_VMA;
-    allocationBitmapSize = (0x8000 / sizeof(allocation_t)); 
+    allocationBitmap = (void*)physicalPageAlloc(16) + HIGH_VMA;
+    allocationBitmapSize = (0x100000 / sizeof(allocation_t)); 
 
     /* zero out the bitmaps */
 
     memset(kbitmap, 0, 0x1000); 
-    memset(allocationBitmap, 0, 0x4000); 
+    memset(allocationBitmap, 0, 0x10000); 
 
     kprintDS("[KMM]", "kHeap initalized");
 }
 
 void *kmalloc(uint64_t size) {
+    static uint64_t i = 0;
     int64_t cnt = 0, blockCount = ROUNDUP(size, 32);
     void *base = (void*)(firstFreeSlot() * BLOCKSIZE);
     for(int64_t i = firstFreeSlot(); i < kbitmapSize; i++) {

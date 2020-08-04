@@ -152,10 +152,22 @@ typedef struct {
     hbaPRDT_t PRDT[1];
 } hbaCommandTable_t;
 
+typedef struct { 
+    uint64_t sectorCount; 
+    volatile hbaPorts_t *hbaPort;
+} drive_t;
+
+typedef struct {
+    uint8_t driveCnt;
+    drive_t *drive;
+} drives_t;
+
 #include <kernel/fs/gfs.h>
+
+drives_t getDrives();
 
 void initAHCI();
 
-void sataRW(drives_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w);
+void sataRW(drive_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w);
 
 #endif

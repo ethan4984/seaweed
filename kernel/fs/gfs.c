@@ -4,25 +4,30 @@
 #include <libk/memUtils.h>
 #include <libk/output.h>
 
-drives_t *drives;
-uint64_t driveCount = 0;
-
-void addDrive(uint64_t sectorCount, volatile hbaPorts_t *hbaPort) {
-    if(driveCount + 1 == 32) {
-        kprintDS("[ACPI]", "Extended drive limit");
-    }
-    drives[driveCount++] = (drives_t) { sectorCount, hbaPort };
-}
+directory_t *rootDir;
+static drives_t drives;
 
 void initGFS() {
-    drives = kmalloc(sizeof(drives_t) * 32);
+    drives = getDrives();
+    rootDir = kmalloc(sizeof(directory_t));
+
+/*    uint16_t *buffer = kmalloc(0x200);
+    for(uint64_t i = 0; i < drives.driveCnt; i++) {
+        for(uint64_t j = 0; j < drives.drive[i].sectorCount; j++) {
+            memset(buffer, 0, 0x200);
+            sataRW(&drives.drive[i], j, 1, buffer, 0);
+            if(*(uint32_t*)buffer == MAGIC_NUMBER) { 
+                 
+            }
+        }
+    }*/
 }
 
 void test() {
     uint16_t *buffer = kmalloc(512);
     
     memset(buffer, 0, 0x200);
-    sataRW(&drives[0], 0, 1, buffer, 0);
+    sataRW(&drives.drive[0], 0, 1, buffer, 0);
 
     for(uint64_t i = 0; i < 0x200 / 2; i++) {
         kprintDS("[KDEBUG]", "%x ", buffer[i]);
@@ -33,10 +38,10 @@ void test() {
 
     memset(buffer, 0, 0x200);
     buffer[0] = 0x69;
-    sataRW(&drives[0], 0, 1, buffer, 1);
+    sataRW(&drives.drive[0], 0, 1, buffer, 1);
 
     memset(buffer, 0, 0x200);
-    sataRW(&drives[0], 0, 1, buffer, 0);
+    sataRW(&drives.drive[0], 0, 1, buffer, 0);
 
     for(uint64_t i = 0; i < 0x200 / 2; i++) {
         kprintDS("[KDEBUG]", "%x ", buffer[i]);

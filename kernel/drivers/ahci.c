@@ -13,10 +13,16 @@
 pciInfo_t pciInfo;
 
 static pciBar_t bar;
+drive_t *drive;
+drives_t drives;
+
+uint64_t driveCount = 0;
 
 static uint32_t findCMD(volatile hbaPorts_t *hbaPort);
 static void initSATAdevice(volatile hbaPorts_t *hbaPort);
 static void sendCommand(volatile hbaPorts_t *hbaPort, uint32_t CMDslot);
+static void addDrive(uint64_t sectorCount, volatile hbaPorts_t *hbaPort);
+
 
 void initAHCI() {
     pciInfo = grabPCIDevices();
@@ -46,6 +52,8 @@ void initAHCI() {
             }
         }
     }
+    
+    drive = kmalloc(sizeof(drives_t) * 32);
 
     bar = getBAR(device, 5);
 
@@ -76,6 +84,9 @@ void initAHCI() {
             }
         }
     }
+
+    drives.drive = drive;
+    drives.driveCnt = driveCount;
 }
 
 static void initSATAdevice(volatile hbaPorts_t *hbaPort) {
@@ -114,7 +125,7 @@ static void initSATAdevice(volatile hbaPorts_t *hbaPort) {
 //    kprintVS("Drive %d: Total sector count: %d\n", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));
 }
 
-void sataRW(drives_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w) {
+void sataRW(drive_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w) {
     static char lock = 0;
     spinLock(&lock);
 
@@ -188,4 +199,15 @@ static uint32_t findCMD(volatile hbaPorts_t *hbaPort) {
             return i;
     }
     return 0;
+}
+
+static void addDrive(uint64_t sectorCount, volatile hbaPorts_t *hbaPort) {
+    if(driveCount + 1 == 32) {
+        kprintDS("[ACPI]", "Extended drive limit");
+    }
+    drive[driveCount++] = (drive_t) { sectorCount, hbaPort };
+}
+
+drives_t getDrives() {
+    return drives;
 }

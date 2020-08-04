@@ -75,8 +75,9 @@ void bootMain(bproto_t *bproto) {
     initAPIC();
     initGDT();
     initPCI();
-    initGFS();
     initAHCI();
+
+    initGFS();
 
     test();
 
