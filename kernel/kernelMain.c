@@ -14,6 +14,7 @@
 #include <kernel/int/idt.h>
 #include <kernel/int/gdt.h>
 #include <kernel/int/tss.h>
+#include <kernel/fs/gfs.h>
 #include <kernel/bproto.h>
 #include <libk/memUtils.h>
 #include <libk/output.h>
@@ -74,8 +75,11 @@ void bootMain(bproto_t *bproto) {
     initAPIC();
     initGDT();
     initPCI();
+    initGFS();
     initAHCI();
-    
+
+    test();
+
     createGenericTSS(stack);
     createNewGDT(0, grabTSS(0));
 

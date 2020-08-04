@@ -20,6 +20,9 @@
 #define HBA_CMD_FR    0x4000
 #define HBA_CMD_CR    0x8000
 
+#include <stdint.h>
+#include <stdbool.h>
+
 typedef struct {
     uint32_t clb;
     uint32_t clbu;
@@ -149,6 +152,10 @@ typedef struct {
     hbaPRDT_t PRDT[1];
 } hbaCommandTable_t;
 
+#include <kernel/fs/gfs.h>
+
 void initAHCI();
+
+void sataRW(drives_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w);
 
 #endif

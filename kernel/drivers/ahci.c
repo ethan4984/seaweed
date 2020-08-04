@@ -1,19 +1,22 @@
 #include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/virtualPageManager.h>
+#include <kernel/sched/scheduler.h>
 #include <kernel/drivers/ahci.h>
 #include <kernel/drivers/pci.h>
+#include <kernel/fs/gfs.h>
 #include <libk/asmUtils.h>
 #include <libk/memUtils.h>
 #include <libk/output.h>
+
+#include <stdbool.h>
 
 pciInfo_t pciInfo;
 
 static pciBar_t bar;
 
-static void startCMD(volatile hbaPorts_t *hbaPort);
 static uint32_t findCMD(volatile hbaPorts_t *hbaPort);
-static void stopCMD(volatile hbaPorts_t *hbaPort);
 static void initSATAdevice(volatile hbaPorts_t *hbaPort);
+static void sendCommand(volatile hbaPorts_t *hbaPort, uint32_t CMDslot);
 
 void initAHCI() {
     pciInfo = grabPCIDevices();
@@ -30,6 +33,12 @@ void initAHCI() {
                 case 1:
                     kprintDS("[AHCI]", "Detected an AHCI 1.0 device");
                     device = pciInfo.pciDevices[i];
+    
+                    if(!(pciRead(device.bus, device.device, device.function, 0x4) & (1 << 2))) {
+                        pciWrite(pciRead(device.bus, device.device, device.function, 0x4) | (1 << 2), device.bus, device.device, device.function, 0x4);
+                        kprintVS("Here\n");
+                    }
+
                     break;
                 case 2:
                     kprintDS("[AHCI]", "Detected a Serial Storage Bus");
@@ -97,28 +106,80 @@ static void initSATAdevice(volatile hbaPorts_t *hbaPort) {
     cmdfis->pmport = 0;
     cmdfis->fisType = FIS_REG_H2D;
 
-    while((hbaPort->tfd & (0x80 | 0x8)));
-
-    startCMD(hbaPort);
-    hbaPort->ci = 1 << CMDslot;
-
-    while(1) {
-        if(!(hbaPort->ci & (1 << CMDslot)))
-            break;
-    }
-
-    stopCMD(hbaPort);
+    sendCommand(hbaPort, CMDslot);
     
     kprintDS("[AHCI]", "Drive %d: Total sector count: %d", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));
-} 
 
-static void startCMD(volatile hbaPorts_t *hbaPort) {
+    addDrive(*((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)), hbaPort);
+//    kprintVS("Drive %d: Total sector count: %d\n", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));
+}
+
+void sataRW(drives_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w) {
+    static char lock = 0;
+    spinLock(&lock);
+
+    uint32_t CMDslot = findCMD(drive->hbaPort);
+
+    volatile hbaCMDhdr_t *hbaCMDhdr = (volatile hbaCMDhdr_t*)((uint64_t)drive->hbaPort->clb + HIGH_VMA);
+    memset((void*)((uint64_t)drive->hbaPort->clb + HIGH_VMA), 0, sizeof(volatile hbaCMDhdr_t));
+
+    hbaCMDhdr += CMDslot;
+    hbaCMDhdr->cfl = sizeof(volatile fisH2D_t) / sizeof(uint32_t);
+    hbaCMDhdr->w = (w) ? 1 : 0;
+    hbaCMDhdr->prdtl = 1;
+    
+    volatile hbaCommandTable_t *cmdtbl = (volatile hbaCommandTable_t*)((uint64_t)hbaCMDhdr->ctba + HIGH_VMA);
+    memset((void*)((uint64_t)hbaCMDhdr->ctba + HIGH_VMA), 0, sizeof(volatile hbaCommandTable_t));
+
+    cmdtbl->PRDT[0].dba = (uint32_t)((uint64_t)buffer - HIGH_VMA);
+    cmdtbl->PRDT[0].dbc = (count * 512) - 1;
+    cmdtbl->PRDT[0].i = 1;
+    
+    fisH2D_t *cmdfis = (fisH2D_t*)(((uint64_t)cmdtbl->cfis));
+    memset((void*)(((uint64_t)cmdtbl->cfis)), 0, sizeof(fisH2D_t));
+    
+    cmdfis->fisType = FIS_REG_H2D;
+    cmdfis->c = 1;
+    cmdfis->command = (w) ? 0x35 : 0x25;
+    
+    cmdfis->lba0 = (uint8_t)((uint32_t)start & 0x000000000000ff);
+    cmdfis->lba1 = (uint8_t)(((uint32_t)start & 0x0000000000ff00) >> 8);
+    cmdfis->lba2 = (uint8_t)(((uint32_t)start & 0x00000000ff0000) >> 16);
+    
+    cmdfis->device = 1 << 6;
+    
+    cmdfis->lba3 = (uint8_t)(((uint32_t)start & 0x000000ff000000) >> 24);
+    cmdfis->lba4 = (uint8_t)(((start >> 32) & 0x0000ff00000000));
+    cmdfis->lba5 = (uint8_t)(((start >> 32) & 0x00ff0000000000) >> 8);
+    
+    cmdfis->countl = count & 0xff;
+    cmdfis->counth = (count >> 8) & 0xff;
+    
+    sendCommand(drive->hbaPort, CMDslot);
+    
+    spinRelease(&lock);
+}
+
+static void sendCommand(volatile hbaPorts_t *hbaPort, uint32_t CMDslot) {
+    while((hbaPort->tfd & (0x80 | 0x8)));
+
     hbaPort->cmd &= ~HBA_CMD_ST;
 
     while(hbaPort->cmd & HBA_CMD_CR);
 
     hbaPort->cmd |= HBA_CMD_FRE;
     hbaPort->cmd |= HBA_CMD_ST;
+    
+    hbaPort->ci = 1 << CMDslot;
+    
+    while(1) {
+        if(!(hbaPort->ci & (1 << CMDslot)))
+            break;
+    }
+    
+    hbaPort->cmd &= ~HBA_CMD_ST;
+    while (hbaPort->cmd & HBA_CMD_CR);
+    hbaPort->cmd &= ~HBA_CMD_FRE;
 }
 
 static uint32_t findCMD(volatile hbaPorts_t *hbaPort) {
@@ -126,10 +187,5 @@ static uint32_t findCMD(volatile hbaPorts_t *hbaPort) {
         if(((hbaPort->sact | hbaPort->ci) & (1 << i)) == 0)
             return i;
     }
-}
-
-static void stopCMD(volatile hbaPorts_t *hbaPort) {
-    hbaPort->cmd &= ~HBA_CMD_ST;
-    while (hbaPort->cmd & HBA_CMD_CR);
-    hbaPort->cmd &= ~HBA_CMD_FRE;
+    return 0;
 }
