@@ -9,60 +9,58 @@
 
 #include <stdbool.h>
 
-#define FILEINFOSECTOR 0x4000
+#define SUPER_BLOCK_SECTOR 0x4000
 
 static drives_t drives;
-
-baseBlock_t *baseBlock;
-
-static uint64_t findFile(const char *name);
+static superBlock_t *superBlock;
+static int64_t inodeLookUp(const char *fileName);
 
 void initGFS() {
     drives = getDrives();
-   
-    baseBlock = kmalloc(0x200);
-    baseBlock->bitmap = (uint8_t*)(physicalPageAlloc(128) + HIGH_VMA);
-    baseBlock->files = (file_t*)(physicalPageAlloc(16) + HIGH_VMA);
+    
+    superBlock = (void*)(physicalPageAlloc(0x200) + HIGH_VMA);
 
-    sataRW(&drives.drive[0], FILEINFOSECTOR, 1, (uint16_t*)baseBlock, 0); // read in the header
-    sataRW(&drives.drive[0], FILEINFOSECTOR + 1 + 1024, 1024, (uint16_t*)baseBlock->bitmap, 0); // read in the bitmap
-    sataRW(&drives.drive[0], FILEINFOSECTOR + 1 + 1024, 1024, (uint16_t*)baseBlock->files, 0); // read in the file info
-}
-
-uint64_t findFreeSector(uint64_t start) {
-    if(start >= drives.drive[0].sectorCount) {
-        kprintDS("[AHCI]", "stop");
-        return 0;
+    for(uint64_t i = 0; i < 0x1000; i++) {
+        sataRW(&drives.drive[0], SUPER_BLOCK_SECTOR + i, 1, (void*)((uint64_t)superBlock + (i * 0x200)), 0); // read the superblock in from disk
     }
 
-    for(uint64_t i = start; i < drives.drive[0].sectorCount; i++) {
-        if(!isset(baseBlock->bitmap, i))
-            return i;
-    }
-}
-
-void createFile(const char *name, uint64_t size) {
-    uint64_t start = findFreeSector(0);
-
-    for(uint64_t i = start; i < start + size; i++) { 
-        set(baseBlock->bitmap, i);
+    if(superBlock->signature != MAGIC_NUMBER) {
+        kprintDS("[FS]", "Fatal error: signature not found %x", superBlock->signature); 
+        return;
     }
 
-    uint64_t fileIndex;
-    for(fileIndex = 0; fileIndex < baseBlock->fileCount; fileIndex++) {
-        if(baseBlock->files[fileIndex].name[0] == 0) {
-            break; 
+    superBlock->blockCount = (drives.drive[0].sectorCount * 512) / superBlock->blockSize;
+    superBlock->unallocatedBlockCnt = (drives.drive[0].sectorCount * 512) / superBlock->blockSize;
+    superBlock->unallocatedInode = (0x200000 / superBlock->inodeSize);
+    superBlock->inodeCount = (0x200000 / superBlock->inodeSize);
+
+    kprintDS("[FS]", "possible block count: %d", superBlock->blockCount);
+    kprintDS("[FS]", "unallocated inodes: %d", superBlock->unallocatedInode);
+    kprintDS("[FS]", "unallocated blocks: %d", superBlock->unallocatedBlockCnt);
+    kprintDS("[FS]", "Block size: %d", superBlock->blockSize);
+    kprintDS("[FS]", "inode size %d", superBlock->inodeSize);
+
+    for(uint64_t i = 0; i < superBlock->inodeCount; i++) {
+        if((superBlock->inodes[i].fileName[i] != 0) && (superBlock->inodes[i].present == 0)) {
+            superBlock->unallocatedInode--;
         }
     }
 
-    strcpy(baseBlock->files[fileIndex].name, name);
-    baseBlock->files[fileIndex].startSector = start;
-    baseBlock->files[fileIndex].sectorCount = size;
+    int64_t fileLocation = inodeLookUp("bruh");
+
+    if(fileLocation == -1) {
+        kprintDS("[FS]", "file not found");
+    } else {
+        kprintDS("[FS]", "file found at index %d", fileLocation);
+    }
 }
 
-void readFile(const char *name, void *buffer, uint64_t start) {
-    uint64_t fileIndex = findFile(name);
-    sataRW(&drives.drive[0], baseBlock->files[fileIndex].startSector + start, 1, buffer, 0);
+static int64_t inodeLookUp(const char *fileName) {
+    for(uint64_t i = 0; i < superBlock->inodeCount - superBlock->unallocatedInode; i++) {
+        if(strcmp(superBlock->inodes[i].fileName, fileName) == 0) 
+            return i;
+    }
+    return -1;
 }
 
 void test() {
@@ -87,13 +85,5 @@ void test() {
 
     for(uint64_t i = 0; i < 0x200 / 2; i++) {
         kprintDS("[KDEBUG]", "%x ", buffer[i]);
-    }
-}
-
-static uint64_t findFile(const char *name) {
-    for(uint64_t fileIndex = 0; fileIndex < baseBlock->fileCount; fileIndex++) {
-        if(baseBlock->files[fileIndex].name[0] == 0) {
-            return fileIndex; 
-        }
     }
 }

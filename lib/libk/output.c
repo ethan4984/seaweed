@@ -20,7 +20,8 @@ prefixList_t prefixList[] = {   { "[KDEBUG]", GREEN, YELLOW },
                                 { "[APIC]", RED, GREEN },
                                 { "[SMP]", YELLOW, LIGHTBLUE },
                                 { "[PCI]", BLUE, LIGHTGREEN },
-                                { "[AHCI]", LIGHTRED, LIGHTYELLOW }
+                                { "[AHCI]", LIGHTRED, LIGHTYELLOW },
+                                { "[FS]", RED, LIGHTGREEN }
                             };
                             
 const char *bashColours[] = {   "\e[39m", "\e[30m", "\e[31m", "\e[32m",

@@ -124,7 +124,7 @@ static void initSATAdevice(volatile hbaPorts_t *hbaPort) {
 //    kprintVS("Drive %d: Total sector count: %d\n", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));
 }
 
-void sataRW(drive_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w) {
+void sataRW(drive_t *drive, uint64_t start, uint32_t count, void *buffer, bool w) {
     static char lock = 0;
     spinLock(&lock);
 
@@ -162,8 +162,8 @@ void sataRW(drive_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bo
     cmdfis->lba4 = (uint8_t)(((start >> 32) & 0x0000ff00000000));
     cmdfis->lba5 = (uint8_t)(((start >> 32) & 0x00ff0000000000) >> 8);
     
-    cmdfis->countl = count & 0xff;
-    cmdfis->counth = (count >> 8) & 0xff;
+    cmdfis->countl = (uint8_t)count;
+    cmdfis->counth = (uint8_t)(count >> 8);
     
     sendCommand(drive->hbaPort, CMDslot);
     

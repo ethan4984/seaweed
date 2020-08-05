@@ -110,7 +110,7 @@ void createNewTask(uint16_t ss, uint64_t rsp, uint16_t cs, uint64_t entryPoint, 
 }
 
 void createThread(uint64_t taskIndex, uint64_t entryPoint) {
-    if(tasks >= numberOfTasks) {
+    if(taskIndex >= numberOfTasks) {
         kprintDS("[KDEBUG]", "bruh pass a vaild index would you");  
         return;
     }

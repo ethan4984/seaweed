@@ -168,6 +168,6 @@ drives_t getDrives();
 
 void initAHCI();
 
-void sataRW(drive_t *drive, uint64_t start, uint64_t count, uint16_t *buffer, bool w);
+void sataRW(drive_t *drive, uint64_t start, uint32_t count, void *buffer, bool w);
 
 #endif

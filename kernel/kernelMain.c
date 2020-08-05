@@ -79,8 +79,6 @@ void bootMain(bproto_t *bproto) {
 
     initGFS();
 
-    test();
-
     createGenericTSS(stack);
     createNewGDT(0, grabTSS(0));
 

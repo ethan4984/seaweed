@@ -1,3 +1,5 @@
+%include 'lib/libk/asmMacros.inc'
+
 videomode equ 280
 kernelEntry equ 0x100000
 
@@ -382,3 +384,21 @@ times 32768-($-$$) db 0 ; mbrs limit
 incbin 'Bin/kernel.bin'
 
 times 0x800000-($-$$) db 0
+
+dd 0x69694200 ; sigature
+dd 0 ; block count
+dd 0 ; inode count
+dd 0 ; unallocated inodes
+dd 0 ; unallocated blocks
+dd 4096 ; block size
+dd 28 ; inode size
+
+times 0x200 - 28 db 0 ; reserved
+
+; inode table begins here
+
+createInode 'bruhlelfile', 8
+
+createInode 'aids', 15
+
+createInode 'bruh', 15

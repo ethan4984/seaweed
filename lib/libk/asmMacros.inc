@@ -37,3 +37,15 @@ pop rbx
 pop rax
 
 %endmacro
+
+%macro createInode 2
+
+db %1, 0 ; fileName
+   
+times %2 db 0
+
+dd 0 ; blockNumber
+dd 0 ; blockCount
+db 0 ; present
+
+%endmacro
