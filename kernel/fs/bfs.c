@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 #define SUPER_BLOCK_SECTOR 0x4000
+#define FILES_SECTOR (0x4000 + (0x200000 / 0x200))
 
 static drives_t drives;
 static superBlock_t *superBlock;
@@ -61,6 +62,19 @@ static int64_t inodeLookUp(const char *fileName) {
             return i;
     }
     return -1;
+}
+
+void *openFile(const char *fileName) {
+    int64_t inodeIndex = inodeLookUp(fileName);
+    if(inodeIndex == -1) {
+        kprintDS("[FS]", "No file by the name of %s", fileName);
+        return NULL;
+    }
+
+    void *filePtr = kmalloc(0x1000);
+    sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[inodeIndex].blockNumber, 1, filePtr, 0);
+
+    return filePtr;
 }
 
 void test() {
