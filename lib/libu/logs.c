@@ -1,3 +1,4 @@
+#include <kernel/sched/scheduler.h>
 #include <libu/syscalls.h>
 #include <libk/string.h>
 #include <libu/logs.h>

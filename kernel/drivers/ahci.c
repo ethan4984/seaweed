@@ -3,7 +3,8 @@
 #include <kernel/sched/scheduler.h>
 #include <kernel/drivers/ahci.h>
 #include <kernel/drivers/pci.h>
-#include <kernel/fs/gfs.h>
+#include <kernel/mm/kHeap.h>
+#include <kernel/fs/bfs.h>
 #include <libk/asmUtils.h>
 #include <libk/memUtils.h>
 #include <libk/output.h>
@@ -27,8 +28,6 @@ static void addDrive(uint64_t sectorCount, volatile hbaPorts_t *hbaPort);
 void initAHCI() {
     pciInfo = grabPCIDevices();
     pci_t device;
-
-    uint8_t found = 0;
 
     for(uint64_t i = 0; i < pciInfo.totalDevices; i++) {
         if((pciInfo.pciDevices[i].classCode == 1) && (pciInfo.pciDevices[i].subclass == 6)) {

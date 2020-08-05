@@ -35,7 +35,6 @@ void kHeapInit() {
 }
 
 void *kmalloc(uint64_t size) {
-    static uint64_t i = 0;
     int64_t cnt = 0, blockCount = ROUNDUP(size, 32);
     void *base = (void*)(firstFreeSlot() * BLOCKSIZE);
     for(int64_t i = firstFreeSlot(); i < kbitmapSize; i++) {

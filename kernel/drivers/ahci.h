@@ -162,7 +162,7 @@ typedef struct {
     drive_t *drive;
 } drives_t;
 
-#include <kernel/fs/gfs.h>
+#include <kernel/fs/bfs.h>
 
 drives_t getDrives();
 
