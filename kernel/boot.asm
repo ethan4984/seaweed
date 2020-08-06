@@ -395,10 +395,10 @@ dd 28 ; inode size
 
 times 0x200 - 28 db 0 ; reserved
 
+createInode 'animeImage', 9, 0, 0
+
 ; inode table begins here
 
-createInode 'bruhlelfile', 8
+times 0xa00000-($-$$) db 0
 
-createInode 'aids', 15
-
-createInode 'bruh', 15
+incbin '916768.bmp'

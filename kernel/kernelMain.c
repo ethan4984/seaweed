@@ -4,6 +4,7 @@
 #include <kernel/drivers/ahci.h>
 #include <kernel/drivers/vesa.h>
 #include <kernel/drivers/pci.h>
+#include <kernel/drivers/bmp.h>
 #include <kernel/int/syscall.h>
 #include <kernel/sched/hpet.h>
 #include <kernel/sched/smp.h>
@@ -83,6 +84,10 @@ void bootMain(bproto_t *bproto) {
     createNewGDT(0, grabTSS(0));
 
     idtInit();
+
+    drawBmp("animeImage");
+
+    *(uint8_t*)0xfffffffffffff = 69;
 
     asm volatile ("sti");
 

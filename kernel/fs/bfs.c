@@ -1,7 +1,7 @@
-#include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/virtualPageManager.h>
-#include <kernel/mm/kHeap.h>
 #include <kernel/drivers/ahci.h> 
+#include <kernel/drivers/vesa.h>
+#include <kernel/mm/kHeap.h>
 #include <kernel/fs/bfs.h>
 #include <libk/memUtils.h>
 #include <libk/string.h>
@@ -46,14 +46,6 @@ void initGFS() {
             superBlock->unallocatedInode--;
         }
     }
-
-    int64_t fileLocation = inodeLookUp("bruh");
-
-    if(fileLocation == -1) {
-        kprintDS("[FS]", "file not found");
-    } else {
-        kprintDS("[FS]", "file found at index %d", fileLocation);
-    }
 }
 
 static int64_t inodeLookUp(const char *fileName) {
@@ -71,10 +63,20 @@ void *openFile(const char *fileName) {
         return NULL;
     }
 
-    void *filePtr = kmalloc(0x1000);
+    void *filePtr = kmalloc(0x200);
     sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[inodeIndex].blockNumber, 1, filePtr, 0);
 
     return filePtr;
+}
+
+void fpInc(const char *fileName, void *fp, uint32_t num) {
+    int64_t inodeIndex = inodeLookUp(fileName);
+    if(inodeIndex == -1) {
+        kprintDS("[FS]", "No file by the name of %s", fileName);
+        return;
+    }
+
+    sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[inodeIndex].blockNumber + num, 1, fp, 0);
 }
 
 void test() {

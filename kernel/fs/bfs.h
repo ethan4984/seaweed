@@ -27,6 +27,10 @@ typedef struct {
 
 void initGFS();
 
+void *openFile(const char *fileName);
+
+void fpInc(const char *fileName, void *fp, uint32_t num);
+
 void test();
 
 #endif
