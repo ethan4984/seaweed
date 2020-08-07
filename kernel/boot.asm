@@ -1,6 +1,5 @@
 %include 'lib/libk/asmMacros.inc'
 
-videomode equ 280
 kernelEntry equ 0x100000
 
 pml4 equ 0x1000
@@ -210,13 +209,49 @@ mov ah, 0x42
 mov si, DAP
 int 0x13
 
-mov eax, 0x4f01
-mov ecx, videomode
-mov edi, VBEINFO 
+mov eax, 0x4f00
+mov edi, VBEINFO
 int 0x10
 
+xor edi, edi
+xor eax, eax
+xor ecx, ecx
+
+mov di, word [VBEINFO.videoModeSeg]
+shl di, 4
+add di, word [VBEINFO.videoModeOffset]
+
+findVesaMode:
+    cmp word [edi + ecx], 0xffff
+    je .end
+   
+    pusha
+
+    mov eax, 0x4f01
+    mov cx, word [edi + ecx]
+    mov edi, VBEMODEINFO
+    int 0x10
+
+    popa
+        
+    cmp word [VBEMODEINFO.width], 1024
+    jne .loop
+    cmp word [VBEMODEINFO.height], 768
+    jne .loop
+    cmp byte [VBEMODEINFO.bpp], 32
+    jne .loop
+
+    mov cx, word [edi + ecx]
+    jmp .end
+
+.loop:
+    add cx, 2
+    jmp findVesaMode
+
+.end:
+
 mov eax, 0x4f02
-mov ebx, videomode
+mov ebx, ecx
 int 0x10
 
 mov word [bootheader.mmapaddress], 0x6000
@@ -224,19 +259,19 @@ mov word [bootheader.mmapaddress], 0x6000
 mov al, byte [e820EntryNumber]
 mov byte [bootheader.mmapentries], al
 
-mov ax, word [VBEINFO.pitch]
+mov ax, word [VBEMODEINFO.pitch]
 mov word [bootheader.pitch], ax
 
-mov ax, word [VBEINFO.width]
+mov ax, word [VBEMODEINFO.width]
 mov word [bootheader.width], ax
 
-mov ax, word [VBEINFO.height]
+mov ax, word [VBEMODEINFO.height]
 mov word [bootheader.height], ax
 
-mov al, byte [VBEINFO.bpp]
+mov al, byte [VBEMODEINFO.bpp]
 mov byte [bootheader.bpp], al
 
-mov eax, dword [VBEINFO.framebuffer]
+mov eax, dword [VBEMODEINFO.framebuffer]
 mov dword [bootheader.framebuffer], eax
 
 cli
@@ -368,7 +403,7 @@ bootheader:
     .bpp: db 0
     .framebuffer: dd 0
 
-VBEINFO:
+VBEMODEINFO:
     times 16 db 0
     .pitch: dw 0
     .width: dw 0
@@ -379,6 +414,26 @@ VBEINFO:
     .framebuffer: dd 0
     times 212 db 0
 
+VBEINFO:
+    .signature: dd 0
+    .versionMinor: db 0
+    .versionMagor: db 0
+    .oemOff: dw 0
+    .oemSeg: dw 0
+    .capabilities: dd 0
+    .videoModeOffset: dw 0
+    .videoModeSeg: dw 0
+    .videoMemBlocks: dw 0
+    .softwareRev: dw 0
+    .vendorOff: dw 0
+    .vendorSeg: dw 0
+    .productNameOff: dw 0
+    .productNameSeg: dw 0
+    .projectRevOff: dw 0
+    .projectRevSeg: dw 0
+    times 222 db 0
+    .oemData times 526 db 0
+    
 times 32768-($-$$) db 0 ; mbrs limit
 
 incbin 'Bin/kernel.bin'
@@ -402,3 +457,5 @@ createInode 'animeImage', 9, 0, 0
 times 0xa00000-($-$$) db 0
 
 incbin '916768.bmp'
+
+

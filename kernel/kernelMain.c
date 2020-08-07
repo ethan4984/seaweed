@@ -87,8 +87,6 @@ void bootMain(bproto_t *bproto) {
 
     drawBmp("animeImage");
 
-    *(uint8_t*)0xfffffffffffff = 69;
-
     asm volatile ("sti");
 
     lapicTimerInit(100);
