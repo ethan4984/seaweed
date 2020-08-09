@@ -7,4 +7,4 @@ This is a custom kernel made for fun
 - basic syscalls
 - VMM
 - PMM
-- Basic Drivers (keyboard, vesa, pci)
+- Basic Drivers (keyboard, vesa, pci, bmp, ahci)
