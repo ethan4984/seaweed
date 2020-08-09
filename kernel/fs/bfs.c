@@ -1,3 +1,4 @@
+#include <kernel/mm/physicalPageManager.h>
 #include <kernel/mm/virtualPageManager.h>
 #include <kernel/drivers/ahci.h> 
 #include <kernel/drivers/vesa.h>
@@ -56,50 +57,35 @@ static int64_t inodeLookUp(const char *fileName) {
     return -1;
 }
 
-void *openFile(const char *fileName) {
-    int64_t inodeIndex = inodeLookUp(fileName);
-    if(inodeIndex == -1) {
-        kprintDS("[FS]", "No file by the name of %s", fileName);
-        return NULL;
-    }
-
-    void *filePtr = kmalloc(0x200);
-    sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[inodeIndex].blockNumber, 1, filePtr, 0);
-
-    return filePtr;
-}
-
-void fpInc(const char *fileName, void *fp, uint32_t num) {
-    int64_t inodeIndex = inodeLookUp(fileName);
-    if(inodeIndex == -1) {
-        kprintDS("[FS]", "No file by the name of %s", fileName);
+void fopen(const char *fileName, void *buffer, uint64_t initalSize) {
+    int64_t index = inodeLookUp(fileName);
+    if(index == -1) {
+        kprintDS("[FS]", "Fatal error: Cannot open file %s", fileName);
         return;
     }
 
-    sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[inodeIndex].blockNumber + num, 1, fp, 0);
+    for(uint64_t i = 0; i < initalSize; i++)
+        sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[index].blockNumber + i, 1, (void*)((uint64_t)buffer + (i * 0x200)), 0);
 }
 
-void test() {
-    uint16_t *buffer = kmalloc(512);
+void writeBack(const char *fileName, void *buffer, uint64_t count) {
+    int64_t index = inodeLookUp(fileName);
+    if(index == -1) {
+        kprintDS("[FS]", "Fatal error: Cannot open file %s", fileName);
+        return;
+    }
     
-    memset(buffer, 0, 0x200);
-    sataRW(&drives.drive[0], 0, 1, buffer, 0);
+    for(uint64_t i = 0; i < count; i++)
+        sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[index].blockNumber + i, 1, (void*)((uint64_t)buffer + (i * 0x200)), 1);
+}
 
-    for(uint64_t i = 0; i < 0x200 / 2; i++) {
-        kprintDS("[KDEBUG]", "%x ", buffer[i]);
+void readIn(const char *fileName, void *buffer, uint64_t start, uint64_t count) {
+    int64_t index = inodeLookUp(fileName);
+    if(index == -1) {
+        kprintDS("[FS]", "Fatal error: Cannot open file %s", fileName);
+        return;
     }
-
-    kprintDS("[KDEBUG]", "BRUH LEL");
-    kprintDS("[KDEBUG]", "BRUH LEL");
-
-    memset(buffer, 0, 0x200);
-    buffer[0] = 0x69;
-    sataRW(&drives.drive[0], 0, 1, buffer, 1);
-
-    memset(buffer, 0, 0x200);
-    sataRW(&drives.drive[0], 0, 1, buffer, 0);
-
-    for(uint64_t i = 0; i < 0x200 / 2; i++) {
-        kprintDS("[KDEBUG]", "%x ", buffer[i]);
-    }
+    
+    for(uint64_t i = start; i < count; i++)
+        sataRW(&drives.drive[0], FILES_SECTOR + superBlock->inodes[index].blockNumber + i, 1, (void*)((uint64_t)buffer + ((i - start) * 0x200)), 0);
 }

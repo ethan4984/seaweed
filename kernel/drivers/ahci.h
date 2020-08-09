@@ -58,9 +58,11 @@ typedef struct {
     uint32_t emCtl;
     uint32_t cap2;
     uint32_t bohc;
-    uint32_t reserved0[29];
-    uint32_t vendor[24];
-    hbaPorts_t hbaPorts[];
+    /*uint32_t reserved0[29];
+    uint32_t vendor[24];*/
+        uint8_t  rsv[0xA0-0x2C];
+    uint8_t  vendor[0x100-0xA0];
+    volatile hbaPorts_t hbaPorts[];
 } GHC_t;
 
 typedef struct {

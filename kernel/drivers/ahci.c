@@ -31,11 +31,13 @@ void initAHCI() {
 
     for(uint64_t i = 0; i < pciInfo.totalDevices; i++) {
         if((pciInfo.pciDevices[i].classCode == 1) && (pciInfo.pciDevices[i].subclass == 6)) {
+            kprintVS("%d\n", i);
             switch(pciInfo.pciDevices[i].progIF) {
                 case 0:
                     kprintDS("[AHCI]", "Detected a Vendor Sepcific Interface (get a new pc retard)");
                     return;
                 case 1:
+                    kprintVS("bruh %d\n", i);
                     kprintDS("[AHCI]", "Detected an AHCI 1.0 device");
                     device = pciInfo.pciDevices[i];
     
@@ -56,30 +58,34 @@ void initAHCI() {
 
     bar = getBAR(device, 5);
 
-    kprintDS("[AHCI]", "BAR5 base %x | size %x", bar.base, bar.size);
+    kprintVS("BAR5 base %x | size %x\n", bar.base, bar.size);
     
-    volatile GHC_t *GHC = (volatile GHC_t*)((uint64_t)bar.base + HIGH_VMA - bar.size);
+    volatile GHC_t *GHC = (volatile GHC_t*)((uint64_t)bar.base + HIGH_VMA - 0x1000);
+
+    kprintVS("pi %x\n", GHC->pi);
+    kprintVS("boh %x\n", GHC->bohc);
+    kprintVS("version %x\n", GHC->vs);
 
     for(uint64_t i = 0; i < 32; i++) {
         if(GHC->pi & (1 << i)) {
             volatile hbaPorts_t *hbaPorts = &GHC->hbaPorts[i];
 
-            if((((hbaPorts->ssts >> 8) & 0xf) != 1) || ((hbaPorts->ssts & 0xf) != 3))
-                continue;
+            kprintVS("Here with %x and %x and %x\n", (hbaPorts->ssts >> 8) & 0xf, (hbaPorts->ssts & 0xf), hbaPorts);
 
             switch(hbaPorts->sig) {
                 case SATA_ATA:
-                    kprintDS("[AHCI]", "Sata drive found on port %d", i);
+                    //kprintDS("[AHCI]", "Sata drive found on port %d", i);
+                    kprintVS("Sata drive found on port %d\n", i);
                     initSATAdevice(hbaPorts);
                     break;
                 case SATA_ATAPI:
-                    kprintDS("[AHCI]", "ATAPI drive found on port %d", i);
+                    kprintVS("ATAPI drive found on port %d\n", i);
                     break;
                 case SATA_SEMB:
-                    kprintDS("[AHCI]", "Enclosure management bridge found on port %d", i);
+                    kprintVS("Enclosure management bridge found on port %d\n", i);
                     break; 
                 case SATA_PM:
-                    kprintDS("[AHCI]", "Port multiplier found on port %d", i);
+                    kprintVS("Port multiplier found on port %d\n", i);
             }
         }
     }
@@ -118,7 +124,8 @@ static void initSATAdevice(volatile hbaPorts_t *hbaPort) {
 
     sendCommand(hbaPort, CMDslot);
     
-    kprintDS("[AHCI]", "Drive %d: Total sector count: %d", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));
+    //kprintDS("[AHCI]", "Drive %d: Total sector count: %d", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));
+    kprintVS("Drive %d: Total sector count: %d\n", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));
 
     addDrive(*((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)), hbaPort);
 //    kprintVS("Drive %d: Total sector count: %d\n", driveCnt++, *((uint64_t*)((uint64_t)&identify[100] + HIGH_VMA)));

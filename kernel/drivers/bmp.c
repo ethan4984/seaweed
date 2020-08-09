@@ -6,8 +6,17 @@
 #include <kernel/fs/bfs.h>
 #include <libk/output.h>
 
+static drives_t drives;
+
 void drawBmp(const char *fileName) {
-    bmpFileHdr_t *bmpFileHdr = openFile(fileName);
+    drives = getDrives(); 
+    uint32_t *data = (void*)(physicalPageAlloc(0x300) + HIGH_VMA);
+
+    for(uint32_t i = 0; i < (0x300 * 8) + 2; i++) {
+        sataRW(&drives.drive[0], i+ 0x7800, 1, (void*)((uint64_t)data + (i * 0x200)), 0); 
+    }
+
+    bmpFileHdr_t *bmpFileHdr = (bmpFileHdr_t*)data;
 
     kprintDS("[KDEBUG]", "bfType %x", bmpFileHdr->bfType);
     kprintDS("[KDEBUG]", "bfSize %x", bmpFileHdr->bfSize);
@@ -18,22 +27,14 @@ void drawBmp(const char *fileName) {
     kprintDS("[KDEBUG]", "red mask %x", bmpFileHdr->redMask);
     kprintDS("[KDEBUG]", "green mask %x", bmpFileHdr->greenMask);
 
-    uint32_t *data = (void*)((uint64_t)bmpFileHdr + bmpFileHdr->bfOffset);
+    data = (void*)((uint64_t)data + bmpFileHdr->bfOffset);
 
     uint64_t x = 0, y = bmpFileHdr->biHeight;
 
-    uint32_t inc = 0;
-    for(uint64_t i = 0; i < ROUNDUP(bmpFileHdr->bfSize, 0x200); i++) {
-        uint32_t *colourBuffer = (void*)((uint64_t)data + 2);
-        inc += 1;
-
-        for(uint32_t i = 0; i < (0x200 / 4); i++) {
-            setPixel(x++, y, colourBuffer[i]);
-            if(x == bmpFileHdr->biWidth) {
-                x = 0;
-                y--;
-            }
-        }
-        fpInc(fileName, data, inc);
-    } 
+    for(uint32_t i = 0; i < bmpFileHdr->biHeight; i++) {
+        for(uint32_t j = 0; j < 1024; j++)
+            setPixel(x++, y, data[j + (i * 1024)]); 
+        x = 0;
+        y--;
+    }
 }

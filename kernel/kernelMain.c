@@ -1,5 +1,5 @@
-#include <kernel/mm/virtualPageManager.h>
 #include <kernel/mm/physicalPageManager.h>
+#include <kernel/mm/virtualPageManager.h>
 #include <kernel/sched/scheduler.h>
 #include <kernel/drivers/ahci.h>
 #include <kernel/drivers/vesa.h>
@@ -85,7 +85,7 @@ void bootMain(bproto_t *bproto) {
 
     idtInit();
 
-    drawBmp("animeImage");
+    drawBmp("wallpapers2");
 
     asm volatile ("sti");
 
@@ -113,9 +113,10 @@ void task1() {
 }
 
 void task2() {
+    static uint64_t bruh = 0;
     while(1) {
         for(uint64_t i = 0; i < 100000000; i++);
-        printf("hi from userspace");
+        printf("hi from userspace %d", bruh++);
     }
 }
 

@@ -440,6 +440,8 @@ incbin 'Bin/kernel.bin'
 
 times 0x800000-($-$$) db 0
 
+; inode table begins here
+
 dd 0x69694200 ; sigature
 dd 0 ; block count
 dd 0 ; inode count
@@ -450,12 +452,14 @@ dd 28 ; inode size
 
 times 0x200 - 28 db 0 ; reserved
 
-createInode 'animeImage', 9, 0, 0
+createInode 'wallpaper1', 9, 0, 0
 
-; inode table begins here
+createInode 'wallpaper2', 9, 0x2800, 0
 
 times 0xa00000-($-$$) db 0
 
-incbin '916768.bmp'
+incbin 'wallpapers/916768.bmp'
 
+times 0xf00000-($-$$) db 0
 
+incbin 'wallpapers/14569.bmp' 
