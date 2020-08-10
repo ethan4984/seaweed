@@ -462,4 +462,4 @@ incbin 'wallpapers/916768.bmp'
 
 times 0xf00000-($-$$) db 0
 
-incbin 'wallpapers/14569.bmp' 
+incbin 'wallpapers/Arikawa_Hime_Holding_C_Programming_Language_wp.bmp' 

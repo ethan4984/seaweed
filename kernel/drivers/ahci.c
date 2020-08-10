@@ -58,7 +58,7 @@ void initAHCI() {
 
     kprintVS("BAR5 base %x | size %x\n", bar.base, bar.size);
     
-    volatile GHC_t *GHC = (volatile GHC_t*)((uint64_t)bar.base + HIGH_VMA);
+    volatile GHC_t *GHC = (volatile GHC_t*)((uint64_t)bar.base + HIGH_VMA - 0x1000);
 
     for(uint64_t i = 0; i < 32; i++) {
         if(GHC->pi & (1 << i)) {
