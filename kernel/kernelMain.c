@@ -7,6 +7,7 @@
 #include <kernel/drivers/bmp.h>
 #include <kernel/int/syscall.h>
 #include <kernel/sched/hpet.h>
+#include <kernel/net/e1000.h>
 #include <kernel/sched/smp.h>
 #include <kernel/acpi/rsdp.h>
 #include <kernel/acpi/madt.h>
@@ -86,6 +87,8 @@ void bootMain(bproto_t *bproto) {
     idtInit();
 
     drawBmp("wallpapers2");
+
+    initEthernet();
 
     asm volatile ("sti");
 

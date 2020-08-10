@@ -24,7 +24,6 @@ static void initSATAdevice(volatile hbaPorts_t *hbaPort);
 static void sendCommand(volatile hbaPorts_t *hbaPort, uint32_t CMDslot);
 static void addDrive(uint64_t sectorCount, volatile hbaPorts_t *hbaPort);
 
-
 void initAHCI() {
     pciInfo = grabPCIDevices();
     pci_t device;
@@ -43,7 +42,6 @@ void initAHCI() {
     
                     if(!(pciRead(device.bus, device.device, device.function, 0x4) & (1 << 2))) {
                         pciWrite(pciRead(device.bus, device.device, device.function, 0x4) | (1 << 2), device.bus, device.device, device.function, 0x4);
-                        kprintVS("Here\n");
                     }
 
                     break;
@@ -60,17 +58,11 @@ void initAHCI() {
 
     kprintVS("BAR5 base %x | size %x\n", bar.base, bar.size);
     
-    volatile GHC_t *GHC = (volatile GHC_t*)((uint64_t)bar.base + HIGH_VMA - 0x1000);
-
-    kprintVS("pi %x\n", GHC->pi);
-    kprintVS("boh %x\n", GHC->bohc);
-    kprintVS("version %x\n", GHC->vs);
+    volatile GHC_t *GHC = (volatile GHC_t*)((uint64_t)bar.base + HIGH_VMA);
 
     for(uint64_t i = 0; i < 32; i++) {
         if(GHC->pi & (1 << i)) {
             volatile hbaPorts_t *hbaPorts = &GHC->hbaPorts[i];
-
-            kprintVS("Here with %x and %x and %x\n", (hbaPorts->ssts >> 8) & 0xf, (hbaPorts->ssts & 0xf), hbaPorts);
 
             switch(hbaPorts->sig) {
                 case SATA_ATA:

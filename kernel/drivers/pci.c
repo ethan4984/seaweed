@@ -62,10 +62,10 @@ pciBar_t getBAR(pci_t device, uint64_t barNum) {
     uint32_t base = pciRead(device.bus, device.device, device.function, 0x10 + (barNum * 4));
 
     pciWrite(0xffffffff, device.bus, device.device, device.function, 0x10 + (barNum * 4));
-    uint32_t size = pciRead(device.bus, device.device, device.function, 0x10 + (barNum * 4)) & ~(0xf);
-    pciWrite(device.bus, device.device, device.function, 0x10 + (barNum * 4), base); 
+    uint32_t size = pciRead(device.bus, device.device, device.function, 0x10 + (barNum * 4));
+    pciWrite(base, device.bus, device.device, device.function, 0x10 + (barNum * 4));
     
-    return (pciBar_t) { base, ~(size) - 1};
+    return (pciBar_t) { base, ~(size) + 1 };
 }
 
 void showDevices() {
